@@ -48,6 +48,7 @@ export default function AdminDashboardPage() {
   const router = useRouter();
 
   const [admin, setAdmin] = useState<Admin | null>(null);
+
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     totalDietPlans: null,
@@ -135,6 +136,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#F7F9F8]">
+
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
@@ -145,14 +147,13 @@ export default function AdminDashboardPage() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 z-50 h-screen w-72 bg-[#0C4372] text-white transition-transform duration-300 lg:translate-x-0 ${
-          sidebarOpen
-            ? "translate-x-0"
-            : "-translate-x-full"
+        className={`fixed left-0 top-0 z-50 flex h-screen w-72 flex-col bg-[#0C4372] text-white transition-transform duration-300 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
+
         {/* Logo */}
-        <div className="flex h-20 items-center justify-between border-b border-white/10 px-6">
+        <div className="flex h-20 shrink-0 items-center justify-between border-b border-white/10 px-6">
           <Link href="/admin/dashboard">
             <h1 className="text-2xl font-bold">
               StayFit
@@ -171,9 +172,10 @@ export default function AdminDashboardPage() {
           </button>
         </div>
 
-        {/* Admin info */}
-        <div className="border-b border-white/10 p-5">
+        {/* Admin Info */}
+        <div className="shrink-0 border-b border-white/10 p-5">
           <div className="flex items-center gap-3">
+
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#CAA035] text-[#0C4372]">
               <UserRound size={22} />
             </div>
@@ -187,16 +189,20 @@ export default function AdminDashboardPage() {
                 {admin?.email}
               </p>
             </div>
+
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="p-4">
+        <nav className="flex-1 overflow-y-auto p-4 pb-6">
+
+          {/* Main Menu */}
           <p className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-white/40">
             Main Menu
           </p>
 
           <div className="space-y-1">
+
             <Link
               href="/admin/dashboard"
               onClick={closeSidebar}
@@ -232,13 +238,16 @@ export default function AdminDashboardPage() {
               <CreditCard size={19} />
               Manage Subscriptions
             </Link>
+
           </div>
 
+          {/* User Content */}
           <p className="mb-3 mt-8 px-3 text-[11px] font-semibold uppercase tracking-wider text-white/40">
             User Content
           </p>
 
           <div className="space-y-1">
+
             <Link
               href="#diet-plans"
               onClick={closeSidebar}
@@ -265,13 +274,16 @@ export default function AdminDashboardPage() {
               <Video size={19} />
               Video Call Requests
             </Link>
+
           </div>
 
+          {/* System */}
           <p className="mb-3 mt-8 px-3 text-[11px] font-semibold uppercase tracking-wider text-white/40">
             System
           </p>
 
           <div className="space-y-1">
+
             <Link
               href="#settings"
               onClick={closeSidebar}
@@ -280,11 +292,13 @@ export default function AdminDashboardPage() {
               <Settings size={19} />
               Settings
             </Link>
+
           </div>
+
         </nav>
 
         {/* Logout */}
-        <div className="absolute bottom-0 left-0 w-full border-t border-white/10 p-4">
+        <div className="w-full shrink-0 border-t border-white/10 p-4">
           <button
             onClick={handleLogout}
             disabled={loggingOut}
@@ -292,18 +306,20 @@ export default function AdminDashboardPage() {
           >
             <LogOut size={19} />
 
-            {loggingOut
-              ? "Logging out..."
-              : "Logout"}
+            {loggingOut ? "Logging out..." : "Logout"}
           </button>
         </div>
+
       </aside>
 
       {/* Main Content */}
       <div className="lg:pl-72">
+
         {/* Top Header */}
         <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-gray-200 bg-white/95 px-5 backdrop-blur sm:px-8">
+
           <div className="flex items-center gap-4">
+
             <button
               onClick={() => setSidebarOpen(true)}
               className="rounded-xl border border-gray-200 p-2.5 text-gray-600 lg:hidden"
@@ -317,13 +333,14 @@ export default function AdminDashboardPage() {
               </h2>
 
               <p className="hidden text-xs text-gray-500 sm:block">
-                Welcome back,{" "}
-                {admin?.fullName || "Admin"}
+                Welcome back, {admin?.fullName || "Admin"}
               </p>
             </div>
+
           </div>
 
           <div className="flex items-center gap-2 rounded-full border border-green-100 bg-green-50 px-3 py-2">
+
             <ShieldCheck
               size={16}
               className="text-green-600"
@@ -332,41 +349,50 @@ export default function AdminDashboardPage() {
             <span className="text-xs font-semibold text-green-700">
               Admin
             </span>
+
           </div>
+
         </header>
 
         {/* Page */}
         <main className="p-5 sm:p-8">
+
           {/* Welcome */}
           <section className="mb-8 rounded-2xl bg-[#0C4372] p-6 text-white shadow-sm sm:p-8">
+
             <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
+
               <div>
+
                 <p className="mb-2 text-sm font-medium text-[#CAA035]">
                   StayFit Administration
                 </p>
 
                 <h1 className="text-2xl font-bold sm:text-3xl">
-                  Welcome,{" "}
-                  {admin?.fullName || "Admin"}!
+                  Welcome, {admin?.fullName || "Admin"}!
                 </h1>
 
                 <p className="mt-2 max-w-xl text-sm leading-6 text-white/75">
-                  Manage users, diet plans,
-                  subscriptions, uploaded content
-                  and video call requests from one
-                  place.
+                  Manage users, diet plans, subscriptions,
+                  uploaded content and video call requests
+                  from one place.
                 </p>
+
               </div>
 
               <div className="hidden rounded-2xl bg-white/10 p-5 md:block">
                 <LayoutDashboard size={42} />
               </div>
+
             </div>
+
           </section>
 
           {/* Statistics */}
           <section className="mb-8">
+
             <div className="mb-5">
+
               <h2 className="text-lg font-bold text-gray-800">
                 Overview
               </h2>
@@ -374,13 +400,18 @@ export default function AdminDashboardPage() {
               <p className="mt-1 text-sm text-gray-500">
                 StayFit platform statistics
               </p>
+
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
               {/* Total Users */}
               <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+
                 <div className="flex items-start justify-between">
+
                   <div>
+
                     <p className="text-sm text-gray-500">
                       Total Users
                     </p>
@@ -388,6 +419,7 @@ export default function AdminDashboardPage() {
                     <h3 className="mt-2 text-3xl font-bold text-[#0C4372]">
                       {stats.totalUsers}
                     </h3>
+
                   </div>
 
                   <div className="rounded-xl bg-[#0C4372]/10 p-3">
@@ -396,25 +428,30 @@ export default function AdminDashboardPage() {
                       className="text-[#0C4372]"
                     />
                   </div>
+
                 </div>
 
                 <p className="mt-4 text-xs text-gray-400">
                   Registered users
                 </p>
+
               </div>
 
               {/* Diet Plans */}
               <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+
                 <div className="flex items-start justify-between">
+
                   <div>
+
                     <p className="text-sm text-gray-500">
                       Diet Plans
                     </p>
 
                     <h3 className="mt-2 text-3xl font-bold text-[#0C4372]">
-                      {stats.totalDietPlans ??
-                        "—"}
+                      {stats.totalDietPlans ?? "—"}
                     </h3>
+
                   </div>
 
                   <div className="rounded-xl bg-green-50 p-3">
@@ -423,25 +460,30 @@ export default function AdminDashboardPage() {
                       className="text-green-600"
                     />
                   </div>
+
                 </div>
 
                 <p className="mt-4 text-xs text-gray-400">
                   Diet plan management
                 </p>
+
               </div>
 
               {/* Subscriptions */}
               <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+
                 <div className="flex items-start justify-between">
+
                   <div>
+
                     <p className="text-sm text-gray-500">
                       Subscriptions
                     </p>
 
                     <h3 className="mt-2 text-3xl font-bold text-[#0C4372]">
-                      {stats.totalSubscriptions ??
-                        "—"}
+                      {stats.totalSubscriptions ?? "—"}
                     </h3>
+
                   </div>
 
                   <div className="rounded-xl bg-[#CAA035]/15 p-3">
@@ -450,17 +492,22 @@ export default function AdminDashboardPage() {
                       className="text-[#CAA035]"
                     />
                   </div>
+
                 </div>
 
                 <p className="mt-4 text-xs text-gray-400">
                   Total subscriptions
                 </p>
+
               </div>
 
               {/* Active Plans */}
               <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+
                 <div className="flex items-start justify-between">
+
                   <div>
+
                     <p className="text-sm text-gray-500">
                       Active Plans
                     </p>
@@ -468,6 +515,7 @@ export default function AdminDashboardPage() {
                     <h3 className="mt-2 text-3xl font-bold text-[#0C4372]">
                       {stats.activePlans ?? "—"}
                     </h3>
+
                   </div>
 
                   <div className="rounded-xl bg-blue-50 p-3">
@@ -476,18 +524,24 @@ export default function AdminDashboardPage() {
                       className="text-blue-600"
                     />
                   </div>
+
                 </div>
 
                 <p className="mt-4 text-xs text-gray-400">
                   Currently active plans
                 </p>
+
               </div>
+
             </div>
+
           </section>
 
           {/* Management */}
           <section className="mb-8">
+
             <div className="mb-5">
+
               <h2 className="text-lg font-bold text-gray-800">
                 Management
               </h2>
@@ -495,11 +549,14 @@ export default function AdminDashboardPage() {
               <p className="mt-1 text-sm text-gray-500">
                 Manage StayFit users and services
               </p>
+
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+
               {/* Users */}
               <div className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0C4372]/10">
                   <Users
                     size={23}
@@ -518,22 +575,23 @@ export default function AdminDashboardPage() {
 
                 <button
                   onClick={() =>
-                    router.push(
-                      "/admin/dashboard/users"
-                    )
+                    router.push("/admin/dashboard/users")
                   }
                   className="mt-5 flex items-center gap-2 text-sm font-semibold text-[#0C4372]"
                 >
                   Open Management
+
                   <ArrowRight
                     size={16}
                     className="transition group-hover:translate-x-1"
                   />
                 </button>
+
               </div>
 
               {/* Diet Users */}
               <div className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50">
                   <Salad
                     size={23}
@@ -552,22 +610,23 @@ export default function AdminDashboardPage() {
 
                 <button
                   onClick={() =>
-                    router.push(
-                      "/admin/dashboard/diet-users"
-                    )
+                    router.push("/admin/dashboard/diet-users")
                   }
                   className="mt-5 flex items-center gap-2 text-sm font-semibold text-[#0C4372]"
                 >
                   Open Management
+
                   <ArrowRight
                     size={16}
                     className="transition group-hover:translate-x-1"
                   />
                 </button>
+
               </div>
 
               {/* Subscriptions */}
               <div className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#CAA035]/15">
                   <CreditCard
                     size={23}
@@ -586,20 +645,22 @@ export default function AdminDashboardPage() {
 
                 <button
                   onClick={() =>
-                    router.push(
-                      "/admin/dashboard/subscriptions"
-                    )
+                    router.push("/admin/dashboard/subscriptions")
                   }
                   className="mt-5 flex items-center gap-2 text-sm font-semibold text-[#0C4372]"
                 >
                   Open Management
+
                   <ArrowRight
                     size={16}
                     className="transition group-hover:translate-x-1"
                   />
                 </button>
+
               </div>
+
             </div>
+
           </section>
 
           {/* Recent Users */}
@@ -607,8 +668,11 @@ export default function AdminDashboardPage() {
             id="users"
             className="rounded-2xl border border-gray-100 bg-white shadow-sm"
           >
+
             <div className="flex flex-col justify-between gap-3 border-b border-gray-100 p-5 sm:flex-row sm:items-center sm:p-6">
+
               <div>
+
                 <h2 className="text-lg font-bold text-gray-800">
                   Recent Users
                 </h2>
@@ -616,26 +680,30 @@ export default function AdminDashboardPage() {
                 <p className="mt-1 text-sm text-gray-500">
                   Latest registered StayFit users
                 </p>
+
               </div>
 
               <button
                 onClick={() =>
-                  router.push(
-                    "/admin/dashboard/users"
-                  )
+                  router.push("/admin/dashboard/users")
                 }
                 className="flex items-center justify-center gap-2 rounded-xl bg-[#0C4372] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#09385F]"
               >
                 View All Users
                 <ArrowRight size={16} />
               </button>
+
             </div>
 
             {/* Desktop Table */}
             <div className="hidden overflow-x-auto md:block">
+
               <table className="w-full">
+
                 <thead>
+
                   <tr className="border-b border-gray-100 bg-gray-50/70">
+
                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                       User
                     </th>
@@ -651,27 +719,36 @@ export default function AdminDashboardPage() {
                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                       Joined
                     </th>
+
                   </tr>
+
                 </thead>
 
                 <tbody>
+
                   {recentUsers.length === 0 ? (
                     <tr>
+
                       <td
                         colSpan={4}
                         className="px-6 py-10 text-center text-sm text-gray-500"
                       >
                         No users found.
                       </td>
+
                     </tr>
                   ) : (
                     recentUsers.map((user) => (
+
                       <tr
                         key={user.id}
                         className="border-b border-gray-50 last:border-0"
                       >
+
                         <td className="px-6 py-4">
+
                           <div className="flex items-center gap-3">
+
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0C4372]/10 text-sm font-bold text-[#0C4372]">
                               {user.fullName
                                 .charAt(0)
@@ -679,6 +756,7 @@ export default function AdminDashboardPage() {
                             </div>
 
                             <div>
+
                               <p className="text-sm font-semibold text-gray-800">
                                 {user.fullName}
                               </p>
@@ -686,8 +764,11 @@ export default function AdminDashboardPage() {
                               <p className="text-xs text-gray-400">
                                 ID #{user.id}
                               </p>
+
                             </div>
+
                           </div>
+
                         </td>
 
                         <td className="px-6 py-4 text-sm text-gray-600">
@@ -695,6 +776,7 @@ export default function AdminDashboardPage() {
                         </td>
 
                         <td className="px-6 py-4">
+
                           <span
                             className={`rounded-full px-3 py-1 text-xs font-semibold ${
                               user.role === "ADMIN"
@@ -704,36 +786,50 @@ export default function AdminDashboardPage() {
                           >
                             {user.role}
                           </span>
+
                         </td>
 
                         <td className="px-6 py-4 text-sm text-gray-500">
+
                           <div className="flex items-center gap-2">
                             <Clock size={15} />
-                            {formatDate(
-                              user.createdAt
-                            )}
+
+                            {formatDate(user.createdAt)}
                           </div>
+
                         </td>
+
                       </tr>
+
                     ))
                   )}
+
                 </tbody>
+
               </table>
+
             </div>
 
             {/* Mobile Users */}
             <div className="divide-y divide-gray-100 md:hidden">
+
               {recentUsers.length === 0 ? (
+
                 <div className="p-6 text-center text-sm text-gray-500">
                   No users found.
                 </div>
+
               ) : (
+
                 recentUsers.map((user) => (
+
                   <div
                     key={user.id}
                     className="p-5"
                   >
+
                     <div className="flex items-center gap-3">
+
                       <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#0C4372]/10 text-sm font-bold text-[#0C4372]">
                         {user.fullName
                           .charAt(0)
@@ -741,6 +837,7 @@ export default function AdminDashboardPage() {
                       </div>
 
                       <div className="min-w-0 flex-1">
+
                         <p className="truncate text-sm font-semibold text-gray-800">
                           {user.fullName}
                         </p>
@@ -750,11 +847,10 @@ export default function AdminDashboardPage() {
                         </p>
 
                         <div className="mt-2 flex items-center gap-2">
+
                           <span className="text-xs text-gray-400">
                             Joined{" "}
-                            {formatDate(
-                              user.createdAt
-                            )}
+                            {formatDate(user.createdAt)}
                           </span>
 
                           <span
@@ -766,21 +862,31 @@ export default function AdminDashboardPage() {
                           >
                             {user.role}
                           </span>
+
                         </div>
+
                       </div>
+
                     </div>
+
                   </div>
+
                 ))
               )}
+
             </div>
+
           </section>
 
           {/* Future Features */}
           <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+            {/* Diet Plans */}
             <div
               id="diet-plans"
               className="rounded-2xl border border-dashed border-gray-200 bg-white p-5"
             >
+
               <FileText
                 size={22}
                 className="text-[#0C4372]"
@@ -794,12 +900,15 @@ export default function AdminDashboardPage() {
                 Admin will be able to upload a
                 separate diet PDF for each user.
               </p>
+
             </div>
 
+            {/* User Pictures */}
             <div
               id="user-images"
               className="rounded-2xl border border-dashed border-gray-200 bg-white p-5"
             >
+
               <ImageIcon
                 size={22}
                 className="text-green-600"
@@ -813,12 +922,15 @@ export default function AdminDashboardPage() {
                 Admin will be able to view meal and
                 workout pictures uploaded by users.
               </p>
+
             </div>
 
+            {/* Video Calls */}
             <div
               id="video-calls"
               className="rounded-2xl border border-dashed border-gray-200 bg-white p-5"
             >
+
               <Video
                 size={22}
                 className="text-[#CAA035]"
@@ -832,10 +944,15 @@ export default function AdminDashboardPage() {
                 Admin will approve requests and send
                 messages to users.
               </p>
+
             </div>
+
           </section>
+
         </main>
+
       </div>
+
     </div>
   );
 }
