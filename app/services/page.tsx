@@ -1131,12 +1131,12 @@ export default function ServicesPage() {
 
 
         .service-card:hover {
-          transform: translateY(-10px);
-          border-color: rgba(202, 160, 53, 0.5);
+  transform: translateY(-12px);
+  border-color: rgba(202, 160, 53, 0.5);
 
-          box-shadow:
-            0 25px 50px rgba(12, 67, 114, 0.12);
-        }
+  box-shadow:
+    0 25px 50px rgba(12, 67, 114, 0.16);
+}
 
 
         /* ======================================================= */
