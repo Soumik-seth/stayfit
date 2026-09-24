@@ -80,6 +80,7 @@ const steps = [
 
 export default function ServicesPage() {
   const [visibleCards, setVisibleCards] = useState<number[]>([]);
+
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
@@ -107,6 +108,7 @@ export default function ServicesPage() {
       );
 
       observer.observe(card);
+
       observers.push(observer);
     });
 
@@ -124,11 +126,13 @@ export default function ServicesPage() {
 
       <section className="relative overflow-hidden bg-[#0C4372] pt-[72px]">
 
-        {/* Animated Background Circles */}
+        {/* Background Glow */}
 
         <div className="absolute -left-20 -top-20 h-60 w-60 animate-[floatOne_7s_ease-in-out_infinite] rounded-full bg-[#CAA035]/10 blur-3xl" />
 
         <div className="absolute -bottom-20 -right-20 h-72 w-72 animate-[floatTwo_8s_ease-in-out_infinite] rounded-full bg-white/5 blur-3xl" />
+
+        {/* Floating Dots */}
 
         <div className="absolute left-[15%] top-[25%] h-4 w-4 animate-[floatSmall_4s_ease-in-out_infinite] rounded-full bg-[#CAA035]/40" />
 
@@ -168,9 +172,11 @@ export default function ServicesPage() {
           {/* Description */}
 
           <p className="mx-auto mt-6 max-w-2xl animate-[fadeInUp_1.2s_ease-out_both] text-sm leading-7 text-blue-100 sm:text-base md:text-lg">
+
             Choose the service that matches your health and fitness goals.
             StayFit provides personalized diet plans, workout schedules,
             and expert video consultations.
+
           </p>
 
           {/* Button */}
@@ -181,6 +187,7 @@ export default function ServicesPage() {
               href="/pricing"
               className="group inline-flex items-center gap-2 rounded-full bg-[#CAA035] px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-white hover:text-[#0C4372] active:scale-95"
             >
+
               Explore Plans
 
               <ArrowRight
@@ -197,7 +204,9 @@ export default function ServicesPage() {
           <div className="mt-10 flex justify-center">
 
             <div className="animate-[scrollBounce_2s_ease-in-out_infinite] rounded-full border border-white/40 p-2">
+
               <div className="h-3 w-1 rounded-full bg-[#CAA035]" />
+
             </div>
 
           </div>
@@ -220,21 +229,75 @@ export default function ServicesPage() {
 
         <div className="relative mx-auto max-w-7xl">
 
-          {/* Section Heading */}
 
-          <div className="mx-auto mb-12 max-w-2xl text-center md:mb-16">
+          {/* =================================================
+              PREMIUM OUR SERVICES HEADING
+          ================================================== */}
 
-            <span className="inline-block animate-[fadeInDown_0.8s_ease-out_both] text-xs font-bold uppercase tracking-[0.2em] text-[#CAA035] sm:text-sm">
-              What We Offer
-            </span>
+          <div className="relative mx-auto mb-14 max-w-3xl text-center md:mb-16">
 
-            <h2 className="mt-3 animate-[fadeInUp_0.9s_ease-out_both] text-3xl font-bold text-[#0C4372] sm:text-4xl md:text-5xl">
-              Choose Your Service
+            {/* Outer Golden Ring */}
+
+            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[150px] w-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#CAA035]/20 animate-[doubleRing_5s_ease-in-out_infinite] sm:h-[170px] sm:w-[380px]" />
+
+            {/* Inner Golden Ring */}
+
+            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[120px] w-[240px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#CAA035]/10 animate-[doubleRingReverse_6s_ease-in-out_infinite] sm:h-[140px] sm:w-[330px]" />
+
+
+            {/* Left Golden Dot */}
+
+            <span className="absolute left-[8%] top-1/2 h-2.5 w-2.5 -translate-y-1/2 animate-[dotFloat_3s_ease-in-out_infinite] rounded-full bg-[#CAA035] shadow-[0_0_15px_rgba(202,160,53,0.7)] sm:left-[15%]" />
+
+
+            {/* Right Golden Dot */}
+
+            <span className="absolute right-[8%] top-1/2 h-2.5 w-2.5 -translate-y-1/2 animate-[dotFloat_3s_ease-in-out_infinite_1.5s] rounded-full bg-[#CAA035] shadow-[0_0_15px_rgba(202,160,53,0.7)] sm:right-[15%]" />
+
+
+            {/* Small Label */}
+
+            <div className="relative z-10 mx-auto mb-4 flex w-fit items-center gap-3">
+
+              <span className="h-px w-8 bg-gradient-to-r from-transparent to-[#CAA035] sm:w-12" />
+
+              <span className="rounded-full border border-[#CAA035]/30 bg-[#CAA035]/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-[#CAA035]">
+                Our Services
+              </span>
+
+              <span className="h-px w-8 bg-gradient-to-l from-transparent to-[#CAA035] sm:w-12" />
+
+            </div>
+
+
+            {/* Main Heading */}
+
+            <h2 className="relative z-10 animate-[fadeInUp_0.9s_ease-out_both] text-3xl font-bold leading-tight text-[#0C4372] sm:text-4xl md:text-5xl">
+
+              Personalized Care.
+
+              <br className="sm:hidden" />
+
+              <span className="relative inline-block text-[#CAA035]">
+
+                Better Results.
+
+                {/* Underline */}
+
+                <span className="absolute -bottom-2 left-1/2 h-[3px] w-16 -translate-x-1/2 animate-[underlinePulse_2.5s_ease-in-out_infinite] rounded-full bg-[#CAA035] sm:w-20" />
+
+              </span>
+
             </h2>
 
-            <p className="mt-4 animate-[fadeInUp_1.1s_ease-out_both] text-sm leading-6 text-gray-600 sm:text-base">
+
+            {/* Description */}
+
+            <p className="relative z-10 mx-auto mt-6 max-w-2xl animate-[fadeInUp_1.1s_ease-out_both] text-sm leading-7 text-gray-600 sm:text-base">
+
               Whether your goal is better nutrition, improved fitness,
               or expert guidance, choose the service that works for you.
+
             </p>
 
           </div>
@@ -258,6 +321,7 @@ export default function ServicesPage() {
                   : "translate-x-[100px]";
 
               return (
+
                 <div
                   key={service.title}
                   ref={(el) => {
@@ -274,7 +338,7 @@ export default function ServicesPage() {
                 >
 
                   {/* =================================================
-                      GOLDEN ROTATING BORDER
+                      ROTATING GOLD BORDER
                   ================================================== */}
 
                   <div className="absolute -inset-[2px] overflow-hidden rounded-[26px]">
@@ -284,9 +348,7 @@ export default function ServicesPage() {
                   </div>
 
 
-                  {/* =================================================
-                      GOLDEN GLOW
-                  ================================================== */}
+                  {/* Golden Glow */}
 
                   <div className="absolute -inset-[4px] rounded-[28px] bg-[#CAA035]/20 opacity-60 blur-md animate-[goldGlow_3s_ease-in-out_infinite]" />
 
@@ -383,6 +445,7 @@ export default function ServicesPage() {
                       href={service.href}
                       className="group/button mt-8 flex items-center justify-center gap-2 rounded-full bg-[#0C4372] px-6 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.02] hover:bg-[#CAA035] hover:shadow-lg active:scale-95"
                     >
+
                       View Plans
 
                       <ArrowRight
@@ -409,6 +472,8 @@ export default function ServicesPage() {
       ====================================================== */}
 
       <section className="relative overflow-hidden bg-gray-50 px-5 py-16 sm:px-8 md:py-20 lg:px-12 lg:py-24">
+
+        {/* Background Icon */}
 
         <HeartPulse
           size={260}
@@ -459,9 +524,15 @@ export default function ServicesPage() {
 
                 </div>
 
+
+                {/* Title */}
+
                 <h3 className="mt-5 text-xl font-bold text-[#0C4372]">
                   {step.title}
                 </h3>
+
+
+                {/* Text */}
 
                 <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-gray-600">
                   {step.text}
@@ -485,7 +556,7 @@ export default function ServicesPage() {
 
         <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-[#0C4372] px-6 py-14 text-center sm:px-10 sm:py-16 lg:px-16">
 
-          {/* Background */}
+          {/* Background Animation */}
 
           <div className="absolute -left-24 -top-24 h-64 w-64 animate-[floatOne_8s_ease-in-out_infinite] rounded-full bg-[#CAA035]/10 blur-3xl" />
 
@@ -493,9 +564,14 @@ export default function ServicesPage() {
 
           <div className="relative">
 
+            {/* Label */}
+
             <p className="animate-[fadeInDown_0.8s_ease-out_both] text-xs font-semibold uppercase tracking-[0.2em] text-[#CAA035] sm:text-sm">
               Start Your Journey
             </p>
+
+
+            {/* Heading */}
 
             <h2 className="mt-3 animate-[fadeInUp_1s_ease-out_both] text-3xl font-bold text-white sm:text-4xl md:text-5xl">
 
@@ -509,10 +585,18 @@ export default function ServicesPage() {
 
             </h2>
 
+
+            {/* Description */}
+
             <p className="mx-auto mt-5 max-w-2xl animate-[fadeInUp_1.2s_ease-out_both] text-sm leading-6 text-blue-100 sm:text-base">
+
               Choose the service that fits your needs and take the first
               step towards a healthier and happier lifestyle.
+
             </p>
+
+
+            {/* Button */}
 
             <div className="animate-[fadeInUp_1.4s_ease-out_both]">
 
@@ -520,6 +604,7 @@ export default function ServicesPage() {
                 href="/pricing"
                 className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#CAA035] px-7 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-white hover:text-[#0C4372] hover:shadow-xl active:scale-95"
               >
+
                 Explore All Plans
 
                 <ArrowRight size={18} />
@@ -540,9 +625,9 @@ export default function ServicesPage() {
 
       <style jsx global>{`
 
-        /* ---------------------------------------------
-           HERO ANIMATIONS
-        --------------------------------------------- */
+        /* ==========================================
+           FADE UP
+        ========================================== */
 
         @keyframes fadeInUp {
 
@@ -559,6 +644,10 @@ export default function ServicesPage() {
         }
 
 
+        /* ==========================================
+           FADE DOWN
+        ========================================== */
+
         @keyframes fadeInDown {
 
           from {
@@ -574,9 +663,9 @@ export default function ServicesPage() {
         }
 
 
-        /* ---------------------------------------------
-           CARD ANIMATION
-        --------------------------------------------- */
+        /* ==========================================
+           CARD ENTER
+        ========================================== */
 
         @keyframes cardEnter {
 
@@ -593,9 +682,9 @@ export default function ServicesPage() {
         }
 
 
-        /* ---------------------------------------------
-           GOLDEN ROTATING BORDER
-        --------------------------------------------- */
+        /* ==========================================
+           ROTATING GOLD BORDER
+        ========================================== */
 
         @keyframes rotateBorder {
 
@@ -610,9 +699,9 @@ export default function ServicesPage() {
         }
 
 
-        /* ---------------------------------------------
+        /* ==========================================
            GOLDEN GLOW
-        --------------------------------------------- */
+        ========================================== */
 
         @keyframes goldGlow {
 
@@ -630,9 +719,85 @@ export default function ServicesPage() {
         }
 
 
-        /* ---------------------------------------------
-           FLOATING BACKGROUND
-        --------------------------------------------- */
+        /* ==========================================
+           DOUBLE GOLD RING
+        ========================================== */
+
+        @keyframes doubleRing {
+
+          0%,
+          100% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0.3;
+          }
+
+          50% {
+            transform: translate(-50%, -50%) scale(1.08);
+            opacity: 0.7;
+          }
+
+        }
+
+
+        @keyframes doubleRingReverse {
+
+          0%,
+          100% {
+            transform: translate(-50%, -50%) scale(1.08);
+            opacity: 0.15;
+          }
+
+          50% {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0.55;
+          }
+
+        }
+
+
+        /* ==========================================
+           GOLDEN DOT
+        ========================================== */
+
+        @keyframes dotFloat {
+
+          0%,
+          100% {
+            transform: translateY(-50%) scale(1);
+            opacity: 0.5;
+          }
+
+          50% {
+            transform: translateY(-50%) scale(1.5);
+            opacity: 1;
+          }
+
+        }
+
+
+        /* ==========================================
+           UNDERLINE PULSE
+        ========================================== */
+
+        @keyframes underlinePulse {
+
+          0%,
+          100% {
+            width: 60px;
+            opacity: 0.5;
+          }
+
+          50% {
+            width: 90px;
+            opacity: 1;
+          }
+
+        }
+
+
+        /* ==========================================
+           FLOAT ONE
+        ========================================== */
 
         @keyframes floatOne {
 
@@ -648,6 +813,10 @@ export default function ServicesPage() {
         }
 
 
+        /* ==========================================
+           FLOAT TWO
+        ========================================== */
+
         @keyframes floatTwo {
 
           0%,
@@ -661,6 +830,10 @@ export default function ServicesPage() {
 
         }
 
+
+        /* ==========================================
+           SMALL FLOAT
+        ========================================== */
 
         @keyframes floatSmall {
 
@@ -678,9 +851,9 @@ export default function ServicesPage() {
         }
 
 
-        /* ---------------------------------------------
-           ICON
-        --------------------------------------------- */
+        /* ==========================================
+           SLOW SPIN
+        ========================================== */
 
         @keyframes spinSlow {
 
@@ -695,9 +868,9 @@ export default function ServicesPage() {
         }
 
 
-        /* ---------------------------------------------
+        /* ==========================================
            GOLD PULSE
-        --------------------------------------------- */
+        ========================================== */
 
         @keyframes goldPulse {
 
@@ -713,9 +886,9 @@ export default function ServicesPage() {
         }
 
 
-        /* ---------------------------------------------
-           SCROLL INDICATOR
-        --------------------------------------------- */
+        /* ==========================================
+           SCROLL BOUNCE
+        ========================================== */
 
         @keyframes scrollBounce {
 
@@ -731,90 +904,133 @@ export default function ServicesPage() {
         }
 
 
-        /* ---------------------------------------------
-           SERVICE CARD HOVER
-        --------------------------------------------- */
+        /* ==========================================
+           SERVICE CARD
+        ========================================== */
 
         .service-card {
+
           transition:
             transform 0.5s ease,
             box-shadow 0.5s ease,
             border-color 0.5s ease;
+
         }
 
 
         .service-card:hover {
+
           transform: translateY(-10px);
+
           border-color: rgba(202, 160, 53, 0.5);
+
           box-shadow:
             0 25px 50px rgba(12, 67, 114, 0.12);
+
         }
 
 
-        /* ---------------------------------------------
-           ICON HOVER
-        --------------------------------------------- */
+        /* ==========================================
+           SERVICE ICON
+        ========================================== */
 
         .service-card:hover .service-icon {
+
           transform: scale(1.1) rotate(5deg);
+
           background: #0c4372;
+
         }
 
 
         .service-card:hover .service-icon svg {
+
           color: white;
+
         }
 
 
         .service-icon {
+
           transition:
             transform 0.5s ease,
             background 0.5s ease;
+
         }
 
 
         .service-icon svg {
+
           transition: color 0.4s ease;
+
         }
 
 
-        /* ---------------------------------------------
-           MOBILE
-        --------------------------------------------- */
+        /* ==========================================
+           MOBILE TOUCH
+        ========================================== */
 
         @media (max-width: 767px) {
 
           .service-card:active {
+
             transform: scale(0.985);
+
           }
 
 
           .service-card:active .service-icon {
+
             transform: scale(1.08) rotate(4deg);
+
             background: #0c4372;
+
           }
 
 
           .service-card:active .service-icon svg {
+
             color: white;
+
           }
 
         }
 
 
-        /* ---------------------------------------------
+        /* ==========================================
+           MOBILE OPTIMIZATION
+        ========================================== */
+
+        @media (max-width: 640px) {
+
+          .service-card {
+
+            box-shadow:
+              0 10px 30px rgba(12, 67, 114, 0.08);
+
+          }
+
+        }
+
+
+        /* ==========================================
            REDUCED MOTION
-        --------------------------------------------- */
+        ========================================== */
 
         @media (prefers-reduced-motion: reduce) {
 
           *,
           *::before,
           *::after {
+
             animation-duration: 0.01ms !important;
+
             animation-iteration-count: 1 !important;
+
             scroll-behavior: auto !important;
+
             transition-duration: 0.01ms !important;
+
           }
 
         }
