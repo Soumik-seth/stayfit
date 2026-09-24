@@ -42,6 +42,7 @@ export default function Navbar() {
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-8 md:flex">
 
+          {/* Home */}
           <Link
             href="/"
             className="font-medium text-[#0C4372] transition hover:text-[#CAA035]"
@@ -49,6 +50,7 @@ export default function Navbar() {
             Home
           </Link>
 
+          {/* About Us */}
           <Link
             href="/about"
             className="font-medium text-gray-700 transition hover:text-[#CAA035]"
@@ -56,6 +58,15 @@ export default function Navbar() {
             About Us
           </Link>
 
+          {/* Services */}
+          <Link
+            href="/services"
+            className="font-medium text-gray-700 transition hover:text-[#CAA035]"
+          >
+            Services
+          </Link>
+
+          {/* Pricing */}
           <Link
             href="/pricing"
             className="font-medium text-gray-700 transition hover:text-[#CAA035]"
@@ -63,6 +74,7 @@ export default function Navbar() {
             Pricing
           </Link>
 
+          {/* Enquiry */}
           <Link
             href="/enquiry"
             className="font-medium text-gray-700 transition hover:text-[#CAA035]"
@@ -70,6 +82,7 @@ export default function Navbar() {
             Enquiry
           </Link>
 
+          {/* Login */}
           <Link
             href="/login"
             className="rounded-full bg-[#0C4372] px-7 py-2.5 font-semibold text-white transition duration-300 hover:bg-[#CAA035]"
@@ -96,6 +109,7 @@ export default function Navbar() {
 
           <div className="flex flex-col gap-4">
 
+            {/* Home */}
             <Link
               href="/"
               onClick={() => setMobileMenu(false)}
@@ -104,6 +118,7 @@ export default function Navbar() {
               Home
             </Link>
 
+            {/* About Us */}
             <Link
               href="/about"
               onClick={() => setMobileMenu(false)}
@@ -112,6 +127,16 @@ export default function Navbar() {
               About Us
             </Link>
 
+            {/* Services */}
+            <Link
+              href="/services"
+              onClick={() => setMobileMenu(false)}
+              className="font-medium text-gray-700"
+            >
+              Services
+            </Link>
+
+            {/* Pricing */}
             <Link
               href="/pricing"
               onClick={() => setMobileMenu(false)}
@@ -120,6 +145,7 @@ export default function Navbar() {
               Pricing
             </Link>
 
+            {/* Enquiry */}
             <Link
               href="/enquiry"
               onClick={() => setMobileMenu(false)}
@@ -128,6 +154,7 @@ export default function Navbar() {
               Enquiry
             </Link>
 
+            {/* Login */}
             <Link
               href="/login"
               onClick={() => setMobileMenu(false)}
