@@ -3,7 +3,12 @@
 import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { ChevronDown, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+} from "lucide-react";
 
 type DurationPlan = {
   duration: string;
@@ -211,15 +216,22 @@ export default function PackagesPage() {
 
   const [activePlan, setActivePlan] = useState(0);
 
-  // Duration dropdown open state (mobile card + desktop cards)
-  const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
-  const [openDesktopDropdownId, setOpenDesktopDropdownId] = useState<
-    number | null
-  >(null);
+  // Mobile dropdown state
+  const [mobileDropdownOpen, setMobileDropdownOpen] =
+    useState(false);
 
-  // Touch/swipe state for mobile card slider
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+  // Desktop dropdown state
+  const [openDesktopDropdownId, setOpenDesktopDropdownId] =
+    useState<number | null>(null);
+
+  // Swipe state
+  const [touchStartX, setTouchStartX] = useState<number | null>(
+    null
+  );
+
+  const [touchEndX, setTouchEndX] = useState<number | null>(
+    null
+  );
 
   const getSelectedDuration = (plan: ServicePlan) => {
     return (
@@ -254,6 +266,7 @@ export default function PackagesPage() {
 
   const goToPrevious = () => {
     setMobileDropdownOpen(false);
+
     setActivePlan((previous) =>
       previous === 0
         ? servicePlans.length - 1
@@ -263,6 +276,7 @@ export default function PackagesPage() {
 
   const goToNext = () => {
     setMobileDropdownOpen(false);
+
     setActivePlan((previous) =>
       previous === servicePlans.length - 1
         ? 0
@@ -270,7 +284,7 @@ export default function PackagesPage() {
     );
   };
 
-  // Swipe handlers for the mobile plan card
+  // Mobile swipe handlers
   const handleTouchStart = (
     event: React.TouchEvent<HTMLDivElement>
   ) => {
@@ -285,16 +299,16 @@ export default function PackagesPage() {
   };
 
   const handleTouchEnd = () => {
-    if (touchStartX === null || touchEndX === null) return;
+    if (touchStartX === null || touchEndX === null) {
+      return;
+    }
 
     const distance = touchStartX - touchEndX;
     const swipeThreshold = 50;
 
     if (distance > swipeThreshold) {
-      // swiped left -> next plan
       goToNext();
     } else if (distance < -swipeThreshold) {
-      // swiped right -> previous plan
       goToPrevious();
     }
 
@@ -307,47 +321,51 @@ export default function PackagesPage() {
       <Navbar />
 
       <main className="min-h-screen bg-[#f8fafb]">
+
         {/* ================= HERO ================= */}
 
-        <section className="relative overflow-hidden bg-white pt-[120px] pb-12 md:pb-20">
-          <div className="mx-auto max-w-7xl px-5 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-[#CAA035]">
+        <section className="relative overflow-hidden bg-white pt-[120px] pb-10 md:pb-16">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-2xl text-center">
+
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-[#CAA035] md:text-sm">
                 STAYFIT PACKAGES
               </p>
 
-              <h1 className="text-4xl font-extrabold leading-tight text-[#0C4372] md:text-5xl lg:text-6xl">
+              <h1 className="text-3xl font-extrabold leading-tight text-[#0C4372] sm:text-4xl md:text-5xl">
                 Choose Your{" "}
                 <span className="text-[#CAA035]">
                   Wellness Plan
                 </span>
               </h1>
 
-              <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-gray-600 md:text-lg md:leading-8">
+              <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-gray-600 md:text-base md:leading-7">
                 Choose the right StayFit service for your
                 health, fitness and wellness journey.
               </p>
+
             </div>
           </div>
         </section>
 
         {/* ================= PLANS ================= */}
 
-        <section className="py-10 md:py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section className="py-7 md:py-12">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
 
-            {/* Mobile slider controls */}
+            {/* ================= MOBILE CONTROLS ================= */}
 
-            <div className="mb-5 flex items-center justify-between md:hidden">
+            <div className="mb-4 flex items-center justify-between md:hidden">
+
               <button
                 onClick={goToPrevious}
                 aria-label="Previous plan"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-[#0C4372] shadow-sm"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-[#0C4372] shadow-sm"
               >
-                <ChevronLeft size={20} />
+                <ChevronLeft size={18} />
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 {servicePlans.map((plan, index) => (
                   <button
                     key={plan.id}
@@ -356,10 +374,10 @@ export default function PackagesPage() {
                       setActivePlan(index);
                     }}
                     aria-label={`Go to ${plan.name}`}
-                    className={`h-2.5 rounded-full transition-all ${
+                    className={`h-2 rounded-full transition-all ${
                       activePlan === index
-                        ? "w-7 bg-[#CAA035]"
-                        : "w-2.5 bg-gray-300"
+                        ? "w-6 bg-[#CAA035]"
+                        : "w-2 bg-gray-300"
                     }`}
                   />
                 ))}
@@ -368,17 +386,20 @@ export default function PackagesPage() {
               <button
                 onClick={goToNext}
                 aria-label="Next plan"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-[#0C4372] shadow-sm"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-[#0C4372] shadow-sm"
               >
-                <ChevronRight size={20} />
+                <ChevronRight size={18} />
               </button>
+
             </div>
 
             {/* ================= MOBILE CARD ================= */}
 
             <div className="md:hidden">
+
               {(() => {
                 const plan = servicePlans[activePlan];
+
                 const selectedDuration =
                   getSelectedDuration(plan);
 
@@ -387,58 +408,75 @@ export default function PackagesPage() {
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
-                    className={`relative touch-pan-y rounded-[20px] border bg-white shadow-sm ${
+                    className={`relative touch-pan-y rounded-[18px] border bg-white shadow-sm ${
                       plan.popular
                         ? "border-[#CAA035]"
                         : "border-gray-200"
                     }`}
                   >
+
+                    {/* Popular */}
+
                     {plan.popular && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span className="rounded-full bg-[#CAA035] px-4 py-1.5 text-[11px] font-bold text-white shadow-sm">
+                        <span className="whitespace-nowrap rounded-full bg-[#CAA035] px-3.5 py-1 text-[10px] font-bold text-white shadow-sm">
                           MOST POPULAR
                         </span>
                       </div>
                     )}
 
-                    <div className="p-5">
-                      {/* Icon + title */}
+                    <div className="p-4">
+
+                      {/* Icon + Title */}
 
                       <div className="text-center">
-                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#0C4372]/10 text-2xl">
+
+                        <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#0C4372]/10 text-xl">
                           {plan.icon}
                         </div>
 
-                        <h2 className="mt-3 text-xl font-bold text-[#0C4372]">
+                        <h2 className="mt-2 text-lg font-bold text-[#0C4372]">
                           {plan.name}
                         </h2>
 
-                        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-gray-500">
+                        <p className="mx-auto mt-1.5 max-w-sm text-xs leading-5 text-gray-500">
                           {plan.description}
                         </p>
+
                       </div>
 
-                      {/* Duration - custom dropdown, opens below */}
+                      {/* Duration */}
 
-                      <div className="relative mt-5">
+                      <div className="relative mt-4">
+
                         <button
                           type="button"
                           onClick={() =>
-                            setMobileDropdownOpen((open) => !open)
+                            setMobileDropdownOpen(
+                              (open) => !open
+                            )
                           }
-                          className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-4 text-base font-semibold text-gray-800 outline-none focus:border-[#0C4372]"
+                          className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-3.5 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-[#0C4372]"
                         >
-                          <span>{selectedDuration.duration}</span>
+                          <span>
+                            {selectedDuration.duration}
+                          </span>
+
                           <ChevronDown
-                            size={20}
+                            size={18}
                             className={`text-gray-500 transition-transform ${
-                              mobileDropdownOpen ? "rotate-180" : ""
+                              mobileDropdownOpen
+                                ? "rotate-180"
+                                : ""
                             }`}
                           />
                         </button>
 
+                        {/* Duration Dropdown */}
+
                         {mobileDropdownOpen && (
-                          <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
+                          <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+
                             {plan.durations.map(
                               (duration, index) => (
                                 <button
@@ -449,11 +487,15 @@ export default function PackagesPage() {
                                       plan.id,
                                       index
                                     );
-                                    setMobileDropdownOpen(false);
+
+                                    setMobileDropdownOpen(
+                                      false
+                                    );
                                   }}
-                                  className={`block w-full px-4 py-3 text-left text-sm font-medium ${
-                                    (selectedDurations[plan.id] ?? 0) ===
-                                    index
+                                  className={`block w-full px-3.5 py-2.5 text-left text-sm font-medium ${
+                                    (selectedDurations[
+                                      plan.id
+                                    ] ?? 0) === index
                                       ? "bg-[#0C4372]/5 text-[#0C4372]"
                                       : "text-gray-700 hover:bg-gray-50"
                                   }`}
@@ -462,183 +504,18 @@ export default function PackagesPage() {
                                 </button>
                               )
                             )}
+
                           </div>
                         )}
+
                       </div>
 
                       {/* Price */}
 
-                      <div className="mt-4 rounded-2xl bg-[#0C4372]/5 px-5 py-4 text-center">
-                        <div className="flex items-center justify-center gap-3">
-                          <span className="text-3xl font-extrabold text-[#0C4372]">
-                            ₹
-                            {selectedDuration.price.toLocaleString(
-                              "en-IN"
-                            )}
-                          </span>
+                      <div className="mt-3 rounded-xl bg-[#0C4372]/5 px-4 py-3 text-center">
 
-                          {selectedDuration.originalPrice && (
-                            <span className="text-sm text-gray-400 line-through">
-                              ₹
-                              {selectedDuration.originalPrice.toLocaleString(
-                                "en-IN"
-                              )}
-                            </span>
-                          )}
-                        </div>
-
-                        <p className="mt-1 text-sm text-gray-500">
-                          {selectedDuration.duration} •
-                          one-time
-                        </p>
-                      </div>
-
-                      {/* Features */}
-
-                      <div className="mt-6">
-                        <h3 className="text-base font-bold text-[#0C4372]">
-                          What&apos;s Included
-                        </h3>
-
-                        <ul className="mt-3 space-y-2.5">
-                          {plan.features
-                            .slice(0, 4)
-                            .map((feature) => (
-                              <li
-                                key={feature}
-                                className="flex items-start gap-3 text-sm text-gray-600"
-                              >
-                                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#CAA035]/15">
-                                  <Check
-                                    size={13}
-                                    className="text-[#0C4372]"
-                                  />
-                                </span>
-
-                                <span>{feature}</span>
-                              </li>
-                            ))}
-                        </ul>
-
-                        {plan.features.length > 4 && (
-                          <button
-                            type="button"
-                            className="mt-4 w-full text-center text-sm font-semibold text-[#0C4372]"
-                          >
-                            See More (
-                            {plan.features.length})
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Choose */}
-
-                      <button
-                        onClick={() =>
-                          handleChoosePlan(plan)
-                        }
-                        className="mt-6 w-full rounded-2xl bg-[#0C4372] py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#09385F]"
-                      >
-                        Choose {plan.name}
-                        <span className="ml-2">→</span>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* ================= DESKTOP ================= */}
-
-            <div className="hidden gap-6 md:grid md:grid-cols-2 xl:grid-cols-4">
-              {servicePlans.map((plan) => {
-                const selectedDuration =
-                  getSelectedDuration(plan);
-                const isDropdownOpen =
-                  openDesktopDropdownId === plan.id;
-
-                return (
-                  <div
-                    key={plan.id}
-                    className={`relative flex flex-col rounded-2xl border bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                      plan.popular
-                        ? "border-[#CAA035]"
-                        : "border-gray-200"
-                    }`}
-                  >
-                    {plan.popular && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span className="whitespace-nowrap rounded-full bg-[#CAA035] px-4 py-1.5 text-xs font-bold text-white">
-                          MOST POPULAR
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex h-full flex-col p-5">
-                      <div className="text-center">
-                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#0C4372]/10 text-xl">
-                          {plan.icon}
-                        </div>
-
-                        <h2 className="mt-3 text-lg font-bold text-[#0C4372]">
-                          {plan.name}
-                        </h2>
-
-                        <p className="mt-2 text-sm leading-6 text-gray-500">
-                          {plan.description}
-                        </p>
-                      </div>
-
-                      <div className="relative mt-4">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setOpenDesktopDropdownId((current) =>
-                              current === plan.id ? null : plan.id
-                            )
-                          }
-                          className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-[#0C4372]"
-                        >
-                          <span>{selectedDuration.duration}</span>
-                          <ChevronDown
-                            size={18}
-                            className={`text-gray-500 transition-transform ${
-                              isDropdownOpen ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
-
-                        {isDropdownOpen && (
-                          <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
-                            {plan.durations.map(
-                              (duration, index) => (
-                                <button
-                                  key={duration.duration}
-                                  type="button"
-                                  onClick={() => {
-                                    handleDurationChange(
-                                      plan.id,
-                                      index
-                                    );
-                                    setOpenDesktopDropdownId(null);
-                                  }}
-                                  className={`block w-full px-4 py-2.5 text-left text-sm font-medium ${
-                                    (selectedDurations[plan.id] ?? 0) ===
-                                    index
-                                      ? "bg-[#0C4372]/5 text-[#0C4372]"
-                                      : "text-gray-700 hover:bg-gray-50"
-                                  }`}
-                                >
-                                  {duration.duration}
-                                </button>
-                              )
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="mt-3 rounded-xl bg-[#0C4372]/5 p-3.5 text-center">
                         <div className="flex items-center justify-center gap-2">
+
                           <span className="text-2xl font-extrabold text-[#0C4372]">
                             ₹
                             {selectedDuration.price.toLocaleString(
@@ -654,69 +531,305 @@ export default function PackagesPage() {
                               )}
                             </span>
                           )}
+
                         </div>
 
                         <p className="mt-1 text-xs text-gray-500">
-                          {selectedDuration.duration} •
-                          one-time
+                          {selectedDuration.duration} • one-time
                         </p>
+
+                        {selectedDuration.offer && (
+                          <span className="mt-2 inline-block rounded-full bg-[#CAA035] px-2.5 py-1 text-[10px] font-bold text-white">
+                            {selectedDuration.offer}
+                          </span>
+                        )}
+
                       </div>
 
-                      <div className="mt-5 flex-1">
-                        <h3 className="text-sm font-bold text-[#0C4372]">
+                      {/* Features */}
+
+                      <div className="mt-5">
+
+                        <h3 className="text-base font-bold text-[#0C4372]">
                           What&apos;s Included
                         </h3>
 
-                        <ul className="mt-3 space-y-2.5">
+                        <ul className="mt-2.5 space-y-2">
+
+                          {plan.features
+                            .slice(0, 4)
+                            .map((feature) => (
+                              <li
+                                key={feature}
+                                className="flex items-start gap-2.5 text-xs text-gray-600"
+                              >
+                                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#CAA035]/15">
+                                  <Check
+                                    size={12}
+                                    className="text-[#0C4372]"
+                                  />
+                                </span>
+
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+
+                        </ul>
+
+                        {plan.features.length > 4 && (
+                          <button
+                            type="button"
+                            className="mt-3 w-full text-center text-xs font-semibold text-[#0C4372]"
+                          >
+                            See More ({plan.features.length})
+                          </button>
+                        )}
+
+                      </div>
+
+                      {/* Choose Plan */}
+
+                      <button
+                        onClick={() =>
+                          handleChoosePlan(plan)
+                        }
+                        className="mt-5 w-full rounded-xl bg-[#0C4372] py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#09385F]"
+                      >
+                        Choose {plan.name}
+                        <span className="ml-2">→</span>
+                      </button>
+
+                    </div>
+                  </div>
+                );
+              })()}
+
+            </div>
+
+            {/* ================= DESKTOP ================= */}
+
+            <div className="hidden gap-5 md:grid md:grid-cols-2 xl:grid-cols-4">
+
+              {servicePlans.map((plan) => {
+                const selectedDuration =
+                  getSelectedDuration(plan);
+
+                const isDropdownOpen =
+                  openDesktopDropdownId === plan.id;
+
+                return (
+                  <div
+                    key={plan.id}
+                    className={`relative flex flex-col rounded-2xl border bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg ${
+                      plan.popular
+                        ? "border-[#CAA035]"
+                        : "border-gray-200"
+                    }`}
+                  >
+
+                    {/* Popular */}
+
+                    {plan.popular && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span className="whitespace-nowrap rounded-full bg-[#CAA035] px-3.5 py-1 text-[10px] font-bold text-white">
+                          MOST POPULAR
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex h-full flex-col p-4">
+
+                      {/* Icon + Title */}
+
+                      <div className="text-center">
+
+                        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#0C4372]/10 text-lg">
+                          {plan.icon}
+                        </div>
+
+                        <h2 className="mt-2 text-base font-bold text-[#0C4372]">
+                          {plan.name}
+                        </h2>
+
+                        <p className="mt-1.5 text-xs leading-5 text-gray-500">
+                          {plan.description}
+                        </p>
+
+                      </div>
+
+                      {/* Duration */}
+
+                      <div className="relative mt-3">
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setOpenDesktopDropdownId(
+                              (current) =>
+                                current === plan.id
+                                  ? null
+                                  : plan.id
+                            )
+                          }
+                          className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-semibold text-gray-800 outline-none focus:border-[#0C4372]"
+                        >
+                          <span>
+                            {selectedDuration.duration}
+                          </span>
+
+                          <ChevronDown
+                            size={16}
+                            className={`text-gray-500 transition-transform ${
+                              isDropdownOpen
+                                ? "rotate-180"
+                                : ""
+                            }`}
+                          />
+                        </button>
+
+                        {isDropdownOpen && (
+                          <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+
+                            {plan.durations.map(
+                              (duration, index) => (
+                                <button
+                                  key={duration.duration}
+                                  type="button"
+                                  onClick={() => {
+                                    handleDurationChange(
+                                      plan.id,
+                                      index
+                                    );
+
+                                    setOpenDesktopDropdownId(
+                                      null
+                                    );
+                                  }}
+                                  className={`block w-full px-3 py-2 text-left text-xs font-medium ${
+                                    (selectedDurations[
+                                      plan.id
+                                    ] ?? 0) === index
+                                      ? "bg-[#0C4372]/5 text-[#0C4372]"
+                                      : "text-gray-700 hover:bg-gray-50"
+                                  }`}
+                                >
+                                  {duration.duration}
+                                </button>
+                              )
+                            )}
+
+                          </div>
+                        )}
+
+                      </div>
+
+                      {/* Price */}
+
+                      <div className="mt-3 rounded-xl bg-[#0C4372]/5 p-3 text-center">
+
+                        <div className="flex items-center justify-center gap-2">
+
+                          <span className="text-2xl font-extrabold text-[#0C4372]">
+                            ₹
+                            {selectedDuration.price.toLocaleString(
+                              "en-IN"
+                            )}
+                          </span>
+
+                          {selectedDuration.originalPrice && (
+                            <span className="text-[10px] text-gray-400 line-through">
+                              ₹
+                              {selectedDuration.originalPrice.toLocaleString(
+                                "en-IN"
+                              )}
+                            </span>
+                          )}
+
+                        </div>
+
+                        <p className="mt-1 text-[10px] text-gray-500">
+                          {selectedDuration.duration} • one-time
+                        </p>
+
+                        {selectedDuration.offer && (
+                          <span className="mt-1.5 inline-block rounded-full bg-[#CAA035] px-2 py-0.5 text-[9px] font-bold text-white">
+                            {selectedDuration.offer}
+                          </span>
+                        )}
+
+                      </div>
+
+                      {/* Features */}
+
+                      <div className="mt-4 flex-1">
+
+                        <h3 className="text-xs font-bold text-[#0C4372]">
+                          What&apos;s Included
+                        </h3>
+
+                        <ul className="mt-2 space-y-2">
+
                           {plan.features.map((feature) => (
                             <li
                               key={feature}
-                              className="flex items-start gap-2 text-sm text-gray-600"
+                              className="flex items-start gap-2 text-xs text-gray-600"
                             >
                               <Check
-                                size={16}
+                                size={14}
                                 className="mt-0.5 flex-shrink-0 text-[#0C4372]"
                               />
 
                               <span>{feature}</span>
                             </li>
                           ))}
+
                         </ul>
+
                       </div>
+
+                      {/* Choose */}
 
                       <button
                         onClick={() =>
                           handleChoosePlan(plan)
                         }
-                        className="mt-6 w-full rounded-xl bg-[#0C4372] py-3 text-sm font-bold text-white transition hover:bg-[#09385F]"
+                        className="mt-5 w-full rounded-xl bg-[#0C4372] py-2.5 text-xs font-bold text-white transition hover:bg-[#09385F]"
                       >
                         Choose Plan →
                       </button>
+
                     </div>
                   </div>
                 );
               })}
+
             </div>
+
           </div>
         </section>
 
         {/* ================= BOTTOM MESSAGE ================= */}
 
-        <section className="pb-16 md:pb-20">
-          <div className="mx-auto max-w-4xl px-5 text-center">
-            <div className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm md:p-10">
-              <h3 className="text-2xl font-bold text-[#0C4372] md:text-3xl">
+        <section className="pb-12 md:pb-16">
+          <div className="mx-auto max-w-3xl px-4 text-center">
+
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:p-8">
+
+              <h3 className="text-xl font-bold text-[#0C4372] md:text-2xl">
                 Your Health Deserves a Plan.
               </h3>
 
-              <p className="mx-auto mt-4 max-w-2xl leading-7 text-gray-600">
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-gray-600">
                 Choose the StayFit service that matches your
                 goals and start your journey towards a healthier
                 lifestyle.
               </p>
+
             </div>
+
           </div>
         </section>
+
       </main>
 
       <Footer />
