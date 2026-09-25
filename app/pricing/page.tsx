@@ -509,8 +509,8 @@ export default function PackagesPage() {
                     {/* Popular */}
 
                     {plan.popular && (
-                      <div className="absolute -top-3 right-4">
-                        <span className="whitespace-nowrap rounded-full bg-[#CAA035] px-3.5 py-1 text-[10px] font-bold text-white shadow-sm">
+                      <div className="absolute top-3 left-3">
+                        <span className="whitespace-nowrap rounded-full bg-[#CAA035] px-2 py-0.5 text-[8px] font-bold text-white shadow-sm">
                           MOST POPULAR
                         </span>
                       </div>
@@ -756,8 +756,8 @@ export default function PackagesPage() {
                     {/* Popular */}
 
                     {plan.popular && (
-                      <div className="absolute -top-3 right-4">
-                        <span className="whitespace-nowrap rounded-full bg-[#CAA035] px-3.5 py-1 text-[10px] font-bold text-white">
+                      <div className="absolute top-3 left-3">
+                        <span className="whitespace-nowrap rounded-full bg-[#CAA035] px-2 py-0.5 text-[8px] font-bold text-white">
                           MOST POPULAR
                         </span>
                       </div>
