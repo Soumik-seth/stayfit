@@ -242,14 +242,14 @@ export default function PackagesPage() {
   const [openDesktopDropdownId, setOpenDesktopDropdownId] =
     useState<number | null>(null);
 
-  // Swipe state
+  // Swipe state — dragOffset follows the finger live, so the card
+  // stops exactly where you pause instead of jumping only on release
   const [touchStartX, setTouchStartX] = useState<number | null>(
     null
   );
 
-  const [touchEndX, setTouchEndX] = useState<number | null>(
-    null
-  );
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   const getSelectedDuration = (plan: ServicePlan) => {
     return (
@@ -310,36 +310,40 @@ export default function PackagesPage() {
     setActivePlan(index);
   };
 
-  // Mobile swipe handlers
+  // Mobile swipe handlers — the track's transform updates on every
+  // touchmove, so if you pause mid-swipe the card just stays there
+  // (following your finger) instead of continuing to animate.
   const handleTouchStart = (
     event: React.TouchEvent<HTMLDivElement>
   ) => {
-    setTouchEndX(null);
+    setIsDragging(true);
+    setDragOffset(0);
     setTouchStartX(event.targetTouches[0].clientX);
   };
 
   const handleTouchMove = (
     event: React.TouchEvent<HTMLDivElement>
   ) => {
-    setTouchEndX(event.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStartX === null || touchEndX === null) {
+    if (touchStartX === null) {
       return;
     }
 
-    const distance = touchStartX - touchEndX;
+    const currentX = event.targetTouches[0].clientX;
+    setDragOffset(currentX - touchStartX);
+  };
+
+  const handleTouchEnd = () => {
     const swipeThreshold = 50;
 
-    if (distance > swipeThreshold) {
+    if (dragOffset < -swipeThreshold) {
       goToNext();
-    } else if (distance < -swipeThreshold) {
+    } else if (dragOffset > swipeThreshold) {
       goToPrevious();
     }
 
+    setIsDragging(false);
+    setDragOffset(0);
     setTouchStartX(null);
-    setTouchEndX(null);
   };
 
   return (
@@ -450,9 +454,15 @@ export default function PackagesPage() {
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
-                className="flex touch-pan-y transition-transform duration-300 ease-out"
+                className={`flex touch-pan-y ${
+                  isDragging
+                    ? ""
+                    : "transition-transform duration-300 ease-out"
+                }`}
                 style={{
-                  transform: `translateX(-${activePlan * 100}%)`,
+                  transform: `translateX(calc(-${
+                    activePlan * 100
+                  }% + ${dragOffset}px))`,
                 }}
               >
 
