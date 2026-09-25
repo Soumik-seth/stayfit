@@ -204,6 +204,21 @@ const servicePlans: ServicePlan[] = [
   },
 ];
 
+// Adds "(X Days)" next to Month-based durations, e.g. "1 Month" -> "1 Month (30 Days)"
+// Session-based durations (Consultation plan) are left as-is.
+const getDurationLabel = (duration: string) => {
+  const match = duration.match(/(\d+)\s*Month/i);
+
+  if (!match) {
+    return duration;
+  }
+
+  const months = parseInt(match[1], 10);
+  const days = months * 30;
+
+  return `${duration} (${days} Days)`;
+};
+
 export default function PackagesPage() {
   const [selectedDurations, setSelectedDurations] = useState<
     Record<number, number>
@@ -216,9 +231,16 @@ export default function PackagesPage() {
 
   const [activePlan, setActivePlan] = useState(0);
 
+  // Direction of the last navigation, used to pick the slide-in animation
+  // (1 = moving forward / next, -1 = moving backward / previous)
+  const [slideDirection, setSlideDirection] = useState(1);
+
   // Mobile dropdown state
   const [mobileDropdownOpen, setMobileDropdownOpen] =
     useState(false);
+
+  // Mobile "See More" features expand state (resets whenever the card changes)
+  const [featuresExpanded, setFeaturesExpanded] = useState(false);
 
   // Desktop dropdown state
   const [openDesktopDropdownId, setOpenDesktopDropdownId] =
@@ -266,6 +288,8 @@ export default function PackagesPage() {
 
   const goToPrevious = () => {
     setMobileDropdownOpen(false);
+    setFeaturesExpanded(false);
+    setSlideDirection(-1);
 
     setActivePlan((previous) =>
       previous === 0
@@ -276,12 +300,21 @@ export default function PackagesPage() {
 
   const goToNext = () => {
     setMobileDropdownOpen(false);
+    setFeaturesExpanded(false);
+    setSlideDirection(1);
 
     setActivePlan((previous) =>
       previous === servicePlans.length - 1
         ? 0
         : previous + 1
     );
+  };
+
+  const goToPlan = (index: number) => {
+    setMobileDropdownOpen(false);
+    setFeaturesExpanded(false);
+    setSlideDirection(index >= activePlan ? 1 : -1);
+    setActivePlan(index);
   };
 
   // Mobile swipe handlers
@@ -320,21 +353,36 @@ export default function PackagesPage() {
     <>
       <Navbar />
 
-      {/* Card entrance animation (plays whenever the mobile card swaps) + hover lift */}
+      {/* Card slide-in animation (direction-aware) + hover lift */}
       <style jsx global>{`
-        @keyframes cardRiseUp {
+        @keyframes cardSlideInRight {
           from {
             opacity: 0;
-            transform: translateY(14px);
+            transform: translateX(36px);
           }
           to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateX(0);
           }
         }
 
-        .plan-card-enter {
-          animation: cardRiseUp 0.35s ease-out;
+        @keyframes cardSlideInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-36px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        .plan-card-enter-right {
+          animation: cardSlideInRight 0.3s ease-out;
+        }
+
+        .plan-card-enter-left {
+          animation: cardSlideInLeft 0.3s ease-out;
         }
 
         .plan-card-hover {
@@ -344,6 +392,20 @@ export default function PackagesPage() {
         .plan-card-hover:hover {
           transform: translateY(-4px);
           box-shadow: 0 12px 24px -8px rgba(12, 67, 114, 0.18);
+        }
+
+        .features-collapse {
+          display: grid;
+          grid-template-rows: 0fr;
+          transition: grid-template-rows 0.3s ease;
+        }
+
+        .features-collapse.is-open {
+          grid-template-rows: 1fr;
+        }
+
+        .features-collapse > div {
+          overflow: hidden;
         }
       `}</style>
 
@@ -396,10 +458,7 @@ export default function PackagesPage() {
                 {servicePlans.map((plan, index) => (
                   <button
                     key={plan.id}
-                    onClick={() => {
-                      setMobileDropdownOpen(false);
-                      setActivePlan(index);
-                    }}
+                    onClick={() => goToPlan(index)}
                     aria-label={`Go to ${plan.name}`}
                     className={`h-2 rounded-full transition-all ${
                       activePlan === index
@@ -422,7 +481,7 @@ export default function PackagesPage() {
 
             {/* ================= MOBILE CARD ================= */}
 
-            <div className="md:hidden">
+            <div className="md:hidden overflow-hidden">
 
               {(() => {
                 const plan = servicePlans[activePlan];
@@ -436,7 +495,11 @@ export default function PackagesPage() {
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
-                    className={`plan-card-enter plan-card-hover relative touch-pan-y rounded-[18px] border bg-white shadow-sm ${
+                    className={`${
+                      slideDirection === 1
+                        ? "plan-card-enter-right"
+                        : "plan-card-enter-left"
+                    } plan-card-hover relative touch-pan-y rounded-[18px] border bg-white shadow-sm ${
                       plan.popular
                         ? "border-[#CAA035]"
                         : "border-gray-200"
@@ -487,7 +550,7 @@ export default function PackagesPage() {
                           className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-3.5 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-[#0C4372]"
                         >
                           <span>
-                            {selectedDuration.duration}
+                            {getDurationLabel(selectedDuration.duration)}
                           </span>
 
                           <ChevronDown
@@ -528,7 +591,7 @@ export default function PackagesPage() {
                                       : "text-gray-700 hover:bg-gray-50"
                                   }`}
                                 >
-                                  {duration.duration}
+                                  {getDurationLabel(duration.duration)}
                                 </button>
                               )
                             )}
@@ -563,7 +626,7 @@ export default function PackagesPage() {
                         </div>
 
                         <p className="mt-1 text-xs text-gray-500">
-                          {selectedDuration.duration} • one-time
+                          {getDurationLabel(selectedDuration.duration)} • one-time
                         </p>
 
                         {selectedDuration.offer && (
@@ -605,12 +668,47 @@ export default function PackagesPage() {
                         </ul>
 
                         {plan.features.length > 4 && (
-                          <button
-                            type="button"
-                            className="mt-3 w-full text-center text-xs font-semibold text-[#0C4372]"
-                          >
-                            See More ({plan.features.length})
-                          </button>
+                          <>
+                            <div
+                              className={`features-collapse ${
+                                featuresExpanded ? "is-open" : ""
+                              }`}
+                            >
+                              <div>
+                                <ul className="mt-2 space-y-2">
+                                  {plan.features
+                                    .slice(4)
+                                    .map((feature) => (
+                                      <li
+                                        key={feature}
+                                        className="flex items-start gap-2.5 text-xs text-gray-600"
+                                      >
+                                        <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#CAA035]/15">
+                                          <Check
+                                            size={12}
+                                            className="text-[#0C4372]"
+                                          />
+                                        </span>
+
+                                        <span>{feature}</span>
+                                      </li>
+                                    ))}
+                                </ul>
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFeaturesExpanded((open) => !open)
+                              }
+                              className="mt-3 w-full text-center text-xs font-semibold text-[#0C4372]"
+                            >
+                              {featuresExpanded
+                                ? "See Less"
+                                : `See More (${plan.features.length})`}
+                            </button>
+                          </>
                         )}
 
                       </div>
@@ -702,7 +800,7 @@ export default function PackagesPage() {
                           className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-semibold text-gray-800 outline-none focus:border-[#0C4372]"
                         >
                           <span>
-                            {selectedDuration.duration}
+                            {getDurationLabel(selectedDuration.duration)}
                           </span>
 
                           <ChevronDown
@@ -741,7 +839,7 @@ export default function PackagesPage() {
                                       : "text-gray-700 hover:bg-gray-50"
                                   }`}
                                 >
-                                  {duration.duration}
+                                  {getDurationLabel(duration.duration)}
                                 </button>
                               )
                             )}
@@ -776,7 +874,7 @@ export default function PackagesPage() {
                         </div>
 
                         <p className="mt-1 text-[10px] text-gray-500">
-                          {selectedDuration.duration} • one-time
+                          {getDurationLabel(selectedDuration.duration)} • one-time
                         </p>
 
                         {selectedDuration.offer && (
