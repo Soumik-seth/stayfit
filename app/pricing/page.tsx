@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
@@ -229,7 +229,53 @@ export default function PackagesPage() {
     4: 1,
   });
 
-  const [activePlan, setActivePlan] = useState(0);
+  // The mobile carousel loops infinitely: we render one clone of the
+  // last card before the first, and one clone of the first card after
+  // the last, then silently jump between the clone and the real card
+  // once the slide animation finishes (see the transition-end handler
+  // below). trackIndex 1..n map to the real cards; 0 and n+1 are clones.
+  const planCount = servicePlans.length;
+
+  const extendedPlans = [
+    servicePlans[planCount - 1],
+    ...servicePlans,
+    servicePlans[0],
+  ];
+
+  const [trackIndex, setTrackIndex] = useState(1);
+  const [skipTrackTransition, setSkipTrackTransition] =
+    useState(false);
+
+  const activePlan =
+    trackIndex === 0
+      ? planCount - 1
+      : trackIndex === extendedPlans.length - 1
+      ? 0
+      : trackIndex - 1;
+
+  // After landing on a clone, jump to the matching real card with no
+  // transition so the loop feels seamless.
+  useEffect(() => {
+    if (!skipTrackTransition) {
+      return;
+    }
+
+    const id = requestAnimationFrame(() =>
+      setSkipTrackTransition(false)
+    );
+
+    return () => cancelAnimationFrame(id);
+  }, [skipTrackTransition]);
+
+  const handleTrackTransitionEnd = () => {
+    if (trackIndex === 0) {
+      setSkipTrackTransition(true);
+      setTrackIndex(planCount);
+    } else if (trackIndex === extendedPlans.length - 1) {
+      setSkipTrackTransition(true);
+      setTrackIndex(1);
+    }
+  };
 
   // Mobile dropdown state
   const [mobileDropdownOpen, setMobileDropdownOpen] =
@@ -285,29 +331,19 @@ export default function PackagesPage() {
   const goToPrevious = () => {
     setMobileDropdownOpen(false);
     setFeaturesExpanded(false);
-
-    setActivePlan((previous) =>
-      previous === 0
-        ? servicePlans.length - 1
-        : previous - 1
-    );
+    setTrackIndex((previous) => previous - 1);
   };
 
   const goToNext = () => {
     setMobileDropdownOpen(false);
     setFeaturesExpanded(false);
-
-    setActivePlan((previous) =>
-      previous === servicePlans.length - 1
-        ? 0
-        : previous + 1
-    );
+    setTrackIndex((previous) => previous + 1);
   };
 
   const goToPlan = (index: number) => {
     setMobileDropdownOpen(false);
     setFeaturesExpanded(false);
-    setActivePlan(index);
+    setTrackIndex(index + 1);
   };
 
   // Mobile swipe handlers — the track's transform updates on every
@@ -448,32 +484,55 @@ export default function PackagesPage() {
 
             {/* ================= MOBILE CARD ================= */}
 
-            <div className="md:hidden overflow-hidden">
+            <div
+              className="md:hidden overflow-hidden"
+              style={{ perspective: "1200px" }}
+            >
 
               <div
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
+                onTransitionEnd={handleTrackTransitionEnd}
                 className={`flex touch-pan-y ${
-                  isDragging
+                  isDragging || skipTrackTransition
                     ? ""
                     : "transition-transform duration-300 ease-out"
                 }`}
                 style={{
                   transform: `translateX(calc(-${
-                    activePlan * 100
+                    trackIndex * 100
                   }% + ${dragOffset}px))`,
                 }}
               >
 
-              {servicePlans.map((plan) => {
+              {extendedPlans.map((plan, position) => {
                 const selectedDuration =
                   getSelectedDuration(plan);
 
+                // Coverflow-style depth: the centered card sits flat and
+                // full size, its neighbours tilt back and shrink slightly.
+                const offset = position - trackIndex;
+                const isCentered = offset === 0;
+
+                const cardStyle: React.CSSProperties = {
+                  transform: isCentered
+                    ? "scale(1) rotateY(0deg)"
+                    : `scale(0.9) rotateY(${
+                        offset > 0 ? -10 : 10
+                      }deg)`,
+                  opacity: isCentered ? 1 : 0.55,
+                  transition:
+                    isDragging || skipTrackTransition
+                      ? "none"
+                      : "transform 0.3s ease, opacity 0.3s ease",
+                };
+
                 return (
                   <div
-                    key={plan.id}
+                    key={`${plan.id}-${position}`}
                     className="w-full flex-shrink-0 px-0.5"
+                    style={cardStyle}
                   >
                   <div
                     className={`plan-card-hover relative rounded-[18px] border bg-white shadow-sm ${
