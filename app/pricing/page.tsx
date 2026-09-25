@@ -1,305 +1,652 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { ChevronDown, ChevronLeft, ChevronRight, Check } from "lucide-react";
 
-type PackagePlan = {
-  id: number;
+type DurationPlan = {
   duration: string;
-  name: string;
   price: number;
   originalPrice?: number;
   offer?: string;
+};
+
+type ServicePlan = {
+  id: number;
+  type: "DIET" | "WORKOUT" | "DIET_WORKOUT" | "CONSULTATION";
+  name: string;
+  icon: string;
   description: string;
+  durations: DurationPlan[];
   features: string[];
   popular?: boolean;
 };
 
-const packages: PackagePlan[] = [
+const servicePlans: ServicePlan[] = [
   {
     id: 1,
-    duration: "1 Month",
-    name: "Starter Wellness",
-    price: 999,
-    originalPrice: 1299,
-    offer: "23% OFF",
+    type: "DIET",
+    name: "Diet Plan",
+    icon: "🥗",
     description:
-      "A simple starting plan to build healthy habits with consistent guidance and support.",
-    features: [
-      "4 Video Call Assistance",
-      "Personalized Daily Diet Plan",
-      "Weekly Progress Tracking",
-      "Basic Nutrition Guidance",
-      "WhatsApp Support",
+      "Personalized diet plans designed around your goals, preferences and lifestyle.",
+    durations: [
+      {
+        duration: "1 Month",
+        price: 999,
+        originalPrice: 1299,
+        offer: "23% OFF",
+      },
+      {
+        duration: "3 Months",
+        price: 2499,
+        originalPrice: 3299,
+        offer: "24% OFF",
+      },
+      {
+        duration: "6 Months",
+        price: 4499,
+        originalPrice: 5999,
+        offer: "25% OFF",
+      },
+      {
+        duration: "12 Months",
+        price: 7999,
+        originalPrice: 10999,
+        offer: "27% OFF",
+      },
     ],
-  },
-
-  {
-    id: 2,
-    duration: "3 Months",
-    name: "Healthy Transformation",
-    price: 2499,
-    originalPrice: 3299,
-    offer: "24% OFF",
-    description:
-      "A structured wellness journey designed to help you build sustainable nutrition and lifestyle habits.",
     features: [
-      "12 Video Call Assistance",
-      "Personalized Daily Diet Plan",
-      "Weekly Progress Tracking",
-      "Personalized Nutrition Guidance",
-      "Lifestyle & Habit Guidance",
-      "Priority Support",
+      "Personalized Diet Plan",
+      "Nutrition Guidance",
+      "Diet Progress Tracking",
+      "Diet Plan Adjustments",
+      "Wellness Guidance",
+      "Support",
     ],
     popular: true,
   },
 
   {
-    id: 3,
-    duration: "6 Months",
-    name: "Complete Wellness",
-    price: 4499,
-    originalPrice: 5999,
-    offer: "25% OFF",
+    id: 2,
+    type: "WORKOUT",
+    name: "Workout Plan",
+    icon: "🏋️",
     description:
-      "A complete six-month wellness program with regular guidance, progress monitoring and personalized support.",
+      "Structured workout guidance designed to help you stay active and achieve your fitness goals.",
+    durations: [
+      {
+        duration: "1 Month",
+        price: 1499,
+        originalPrice: 1999,
+        offer: "25% OFF",
+      },
+      {
+        duration: "3 Months",
+        price: 3999,
+        originalPrice: 4999,
+        offer: "20% OFF",
+      },
+      {
+        duration: "6 Months",
+        price: 6999,
+        originalPrice: 8999,
+        offer: "22% OFF",
+      },
+      {
+        duration: "12 Months",
+        price: 11999,
+        originalPrice: 14999,
+        offer: "20% OFF",
+      },
+    ],
     features: [
-      "24 Video Call Assistance",
-      "Personalized Daily Diet Plan",
-      "Monthly Health Progress Review",
-      "Personalized Nutrition Guidance",
-      "Lifestyle & Fitness Guidance",
-      "Priority WhatsApp Support",
-      "Goal-Based Diet Adjustments",
+      "Personalized Workout Plan",
+      "Workout Guidance",
+      "Progress Tracking",
+      "Exercise Guidance",
+      "Fitness Support",
+      "Goal-Based Adjustments",
     ],
   },
 
   {
-    id: 4,
-    duration: "12 Months",
-    name: "Ultimate StayFit",
-    price: 7999,
-    originalPrice: 10999,
-    offer: "27% OFF",
+    id: 3,
+    type: "DIET_WORKOUT",
+    name: "Diet + Workout",
+    icon: "💪",
     description:
-      "Our long-term wellness program for building lasting healthy habits with continuous personalized guidance.",
+      "A complete wellness program combining personalized nutrition and workout guidance.",
+    durations: [
+      {
+        duration: "1 Month",
+        price: 1999,
+        originalPrice: 2499,
+        offer: "20% OFF",
+      },
+      {
+        duration: "3 Months",
+        price: 5499,
+        originalPrice: 6999,
+        offer: "21% OFF",
+      },
+      {
+        duration: "6 Months",
+        price: 9999,
+        originalPrice: 11999,
+        offer: "17% OFF",
+      },
+      {
+        duration: "12 Months",
+        price: 16999,
+        originalPrice: 19999,
+        offer: "15% OFF",
+      },
+    ],
     features: [
-      "48 Video Call Assistance",
-      "Personalized Daily Diet Plan",
-      "Monthly Progress Review",
-      "Personalized Nutrition Guidance",
-      "Lifestyle & Fitness Guidance",
-      "Unlimited Support",
-      "Regular Diet Adjustments",
-      "Long-Term Wellness Planning",
+      "Personalized Diet Plan",
+      "Personalized Workout Plan",
+      "Diet Progress Tracking",
+      "Workout Progress Tracking",
+      "Nutrition Guidance",
+      "Fitness Guidance",
+      "Video Consultation Request",
+    ],
+    popular: true,
+  },
+
+  {
+    id: 4,
+    type: "CONSULTATION",
+    name: "Video Consultation",
+    icon: "📹",
+    description:
+      "Connect with the StayFit team through personalized video consultation sessions.",
+    durations: [
+      {
+        duration: "1 Session",
+        price: 499,
+        originalPrice: 699,
+        offer: "29% OFF",
+      },
+      {
+        duration: "3 Sessions",
+        price: 1299,
+        originalPrice: 1799,
+        offer: "28% OFF",
+      },
+      {
+        duration: "6 Sessions",
+        price: 2299,
+        originalPrice: 2999,
+        offer: "23% OFF",
+      },
+      {
+        duration: "12 Sessions",
+        price: 3999,
+        originalPrice: 4999,
+        offer: "20% OFF",
+      },
+    ],
+    features: [
+      "Video Consultation",
+      "Personalized Guidance",
+      "Goal Discussion",
+      "Progress Discussion",
+      "Expert Support",
     ],
   },
 ];
 
 export default function PackagesPage() {
-  const handleGetStarted = (plan: PackagePlan) => {
-    // Login check + payment will be added here later.
-    console.log("Selected Package:", plan);
+  const [selectedDurations, setSelectedDurations] = useState<
+    Record<number, number>
+  >({
+    1: 1,
+    2: 1,
+    3: 1,
+    4: 1,
+  });
+
+  const [activePlan, setActivePlan] = useState(0);
+
+  const getSelectedDuration = (plan: ServicePlan) => {
+    return (
+      plan.durations[selectedDurations[plan.id] ?? 0] ??
+      plan.durations[0]
+    );
+  };
+
+  const handleDurationChange = (
+    planId: number,
+    index: number
+  ) => {
+    setSelectedDurations((previous) => ({
+      ...previous,
+      [planId]: index,
+    }));
+  };
+
+  const handleChoosePlan = (plan: ServicePlan) => {
+    const selectedDuration = getSelectedDuration(plan);
+
+    console.log("Selected Plan:", {
+      type: plan.type,
+      name: plan.name,
+      duration: selectedDuration.duration,
+      price: selectedDuration.price,
+    });
+
+    // Login check, coupon and test purchase
+    // will be added in the next steps.
+  };
+
+  const goToPrevious = () => {
+    setActivePlan((previous) =>
+      previous === 0
+        ? servicePlans.length - 1
+        : previous - 1
+    );
+  };
+
+  const goToNext = () => {
+    setActivePlan((previous) =>
+      previous === servicePlans.length - 1
+        ? 0
+        : previous + 1
+    );
   };
 
   return (
-    <><Navbar />
-    <main className="bg-[#f8fafb] min-h-screen">
+    <>
+      <Navbar />
 
-      {/* ================= HERO ================= */}
-      <section className="relative overflow-hidden bg-white pt-[130px] pb-20">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <main className="min-h-screen bg-[#f8fafb]">
+        {/* ================= HERO ================= */}
 
-          <div className="max-w-3xl mx-auto text-center">
+        <section className="relative overflow-hidden bg-white pt-[120px] pb-12 md:pb-20">
+          <div className="mx-auto max-w-7xl px-5 lg:px-8">
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-[#CAA035]">
+                STAYFIT PACKAGES
+              </p>
 
-            <p className="text-sm font-semibold tracking-[0.3em] uppercase text-[#D5A021] mb-5">
-              STAYFIT PACKAGES
-            </p>
+              <h1 className="text-4xl font-extrabold leading-tight text-[#0C4372] md:text-5xl lg:text-6xl">
+                Choose Your{" "}
+                <span className="text-[#CAA035]">
+                  Wellness Plan
+                </span>
+              </h1>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-[#104F80]">
-              Choose Your
-              <span className="text-[#D5A021]"> Wellness Plan</span>
-            </h1>
-
-            <p className="mt-6 text-gray-600 text-base md:text-lg leading-8 max-w-2xl mx-auto">
-              Take the next step towards a healthier lifestyle with
-              personalized nutrition, expert guidance and continuous support
-              designed around your goals.
-            </p>
-
+              <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-gray-600 md:text-lg md:leading-8">
+                Choose the right StayFit service for your
+                health, fitness and wellness journey.
+              </p>
+            </div>
           </div>
+        </section>
 
-        </div>
-      </section>
+        {/* ================= PLANS ================= */}
 
+        <section className="py-10 md:py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-      {/* ================= PACKAGES ================= */}
-      <section className="py-16 md:py-20">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            {/* Mobile slider controls */}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
-
-            {packages.map((plan) => (
-              <div
-                key={plan.id}
-                className={`relative flex flex-col bg-white rounded-3xl border transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${
-                  plan.popular
-                    ? "border-[#D5A021] shadow-lg"
-                    : "border-gray-200 shadow-sm"
-                }`}
+            <div className="mb-5 flex items-center justify-between md:hidden">
+              <button
+                onClick={goToPrevious}
+                aria-label="Previous plan"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-[#0C4372] shadow-sm"
               >
+                <ChevronLeft size={20} />
+              </button>
 
-                {/* Popular Badge */}
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="bg-[#D5A021] text-white text-xs font-bold px-5 py-2 rounded-full shadow-md whitespace-nowrap">
-                      MOST POPULAR
-                    </span>
-                  </div>
-                )}
-
-
-                {/* Offer Badge */}
-                {plan.offer && (
-                  <div className="absolute top-5 right-5">
-                    <span className="bg-[#104F80] text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-                      {plan.offer}
-                    </span>
-                  </div>
-                )}
-
-
-                {/* Card Content */}
-                <div className="p-7 flex flex-col h-full">
-
-                  {/* Duration */}
-                  <div className="mb-5">
-                    <p className="text-sm font-semibold text-[#D5A021] uppercase tracking-wider">
-                      {plan.duration}
-                    </p>
-
-                    <h2 className="mt-2 text-2xl font-bold text-[#104F80]">
-                      {plan.name}
-                    </h2>
-                  </div>
-
-
-                  {/* Price */}
-                  <div className="mb-5">
-
-                    <div className="flex items-end gap-2">
-                      <span className="text-4xl font-extrabold text-[#104F80]">
-                        ₹{plan.price.toLocaleString("en-IN")}
-                      </span>
-
-                      {plan.originalPrice && (
-                        <span className="text-sm text-gray-400 line-through mb-1">
-                          ₹{plan.originalPrice.toLocaleString("en-IN")}
-                        </span>
-                      )}
-                    </div>
-
-                    <p className="text-sm text-gray-500 mt-1">
-                      for {plan.duration.toLowerCase()}
-                    </p>
-
-                  </div>
-
-
-                  {/* Description */}
-                  <p className="text-sm text-gray-600 leading-6 min-h-[96px]">
-                    {plan.description}
-                  </p>
-
-
-                  {/* Divider */}
-                  <div className="border-t border-gray-100 my-6" />
-
-
-                  {/* Features */}
-                  <div className="flex-1">
-
-                    <p className="text-sm font-bold text-[#104F80] mb-4">
-                      What&apos;s Included
-                    </p>
-
-                    <ul className="space-y-3">
-
-                      {plan.features.map((feature, index) => (
-                        <li
-                          key={index}
-                          className="flex items-start gap-3 text-sm text-gray-600"
-                        >
-                          <span className="flex-shrink-0 mt-0.5 w-5 h-5 rounded-full bg-[#eef6f9] flex items-center justify-center">
-                            <svg
-                              className="w-3 h-3 text-[#104F80]"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2.5"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          </span>
-
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-
-                    </ul>
-
-                  </div>
-
-
-                  {/* Button */}
+              <div className="flex items-center gap-2">
+                {servicePlans.map((plan, index) => (
                   <button
-                    onClick={() => handleGetStarted(plan)}
-                    className={`w-full mt-8 py-3.5 rounded-xl font-semibold transition-all duration-300 ${
+                    key={plan.id}
+                    onClick={() => setActivePlan(index)}
+                    aria-label={`Go to ${plan.name}`}
+                    className={`h-2.5 rounded-full transition-all ${
+                      activePlan === index
+                        ? "w-7 bg-[#CAA035]"
+                        : "w-2.5 bg-gray-300"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <button
+                onClick={goToNext}
+                aria-label="Next plan"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-[#0C4372] shadow-sm"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+
+            {/* ================= MOBILE CARD ================= */}
+
+            <div className="md:hidden">
+              {(() => {
+                const plan = servicePlans[activePlan];
+                const selectedDuration =
+                  getSelectedDuration(plan);
+
+                return (
+                  <div
+                    className={`relative rounded-[26px] border bg-white shadow-sm ${
                       plan.popular
-                        ? "bg-[#104F80] text-white hover:bg-[#0c416b]"
-                        : "border-2 border-[#104F80] text-[#104F80] hover:bg-[#104F80] hover:text-white"
+                        ? "border-[#CAA035]"
+                        : "border-gray-200"
                     }`}
                   >
-                    Get Started
-                  </button>
+                    {plan.popular && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span className="rounded-full bg-[#CAA035] px-4 py-1.5 text-[11px] font-bold text-white shadow-sm">
+                          MOST POPULAR
+                        </span>
+                      </div>
+                    )}
 
-                </div>
-              </div>
-            ))}
+                    <div className="p-6">
+                      {/* Icon + title */}
 
+                      <div className="text-center">
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#0C4372]/10 text-3xl">
+                          {plan.icon}
+                        </div>
+
+                        <h2 className="mt-4 text-2xl font-bold text-[#0C4372]">
+                          {plan.name}
+                        </h2>
+
+                        <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-gray-500">
+                          {plan.description}
+                        </p>
+                      </div>
+
+                      {/* Duration */}
+
+                      <div className="relative mt-6">
+                        <select
+                          value={
+                            selectedDurations[plan.id] ?? 0
+                          }
+                          onChange={(event) =>
+                            handleDurationChange(
+                              plan.id,
+                              Number(event.target.value)
+                            )
+                          }
+                          className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-4 py-4 pr-12 text-base font-semibold text-gray-800 outline-none focus:border-[#0C4372]"
+                        >
+                          {plan.durations.map(
+                            (duration, index) => (
+                              <option
+                                key={duration.duration}
+                                value={index}
+                              >
+                                {duration.duration}
+                              </option>
+                            )
+                          )}
+                        </select>
+
+                        <ChevronDown
+                          size={20}
+                          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+                        />
+                      </div>
+
+                      {/* Price */}
+
+                      <div className="mt-5 rounded-2xl bg-[#0C4372]/5 px-5 py-5 text-center">
+                        <div className="flex items-center justify-center gap-3">
+                          <span className="text-4xl font-extrabold text-[#0C4372]">
+                            ₹
+                            {selectedDuration.price.toLocaleString(
+                              "en-IN"
+                            )}
+                          </span>
+
+                          {selectedDuration.originalPrice && (
+                            <span className="text-sm text-gray-400 line-through">
+                              ₹
+                              {selectedDuration.originalPrice.toLocaleString(
+                                "en-IN"
+                              )}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="mt-1 text-sm text-gray-500">
+                          {selectedDuration.duration} •
+                          one-time
+                        </p>
+
+                        {selectedDuration.offer && (
+                          <span className="mt-3 inline-block rounded-full bg-[#CAA035] px-3 py-1 text-xs font-bold text-white">
+                            {selectedDuration.offer}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Features */}
+
+                      <div className="mt-7">
+                        <h3 className="text-lg font-bold text-[#0C4372]">
+                          What&apos;s Included
+                        </h3>
+
+                        <ul className="mt-4 space-y-3">
+                          {plan.features
+                            .slice(0, 4)
+                            .map((feature) => (
+                              <li
+                                key={feature}
+                                className="flex items-start gap-3 text-sm text-gray-600"
+                              >
+                                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#CAA035]/15">
+                                  <Check
+                                    size={13}
+                                    className="text-[#0C4372]"
+                                  />
+                                </span>
+
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                        </ul>
+
+                        {plan.features.length > 4 && (
+                          <button
+                            type="button"
+                            className="mt-5 w-full text-center text-sm font-semibold text-[#0C4372]"
+                          >
+                            See More (
+                            {plan.features.length})
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Choose */}
+
+                      <button
+                        onClick={() =>
+                          handleChoosePlan(plan)
+                        }
+                        className="mt-7 w-full rounded-2xl bg-[#0C4372] py-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#09385F]"
+                      >
+                        Choose {plan.name}
+                        <span className="ml-2">→</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* ================= DESKTOP ================= */}
+
+            <div className="hidden gap-6 md:grid md:grid-cols-2 xl:grid-cols-4">
+              {servicePlans.map((plan) => {
+                const selectedDuration =
+                  getSelectedDuration(plan);
+
+                return (
+                  <div
+                    key={plan.id}
+                    className={`relative flex flex-col rounded-3xl border bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                      plan.popular
+                        ? "border-[#CAA035]"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    {plan.popular && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span className="whitespace-nowrap rounded-full bg-[#CAA035] px-4 py-1.5 text-xs font-bold text-white">
+                          MOST POPULAR
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex h-full flex-col p-6">
+                      <div className="text-center">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#0C4372]/10 text-2xl">
+                          {plan.icon}
+                        </div>
+
+                        <h2 className="mt-4 text-xl font-bold text-[#0C4372]">
+                          {plan.name}
+                        </h2>
+
+                        <p className="mt-3 text-sm leading-6 text-gray-500">
+                          {plan.description}
+                        </p>
+                      </div>
+
+                      <div className="relative mt-5">
+                        <select
+                          value={
+                            selectedDurations[plan.id] ?? 0
+                          }
+                          onChange={(event) =>
+                            handleDurationChange(
+                              plan.id,
+                              Number(event.target.value)
+                            )
+                          }
+                          className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-3 pr-10 text-sm font-semibold text-gray-800 outline-none focus:border-[#0C4372]"
+                        >
+                          {plan.durations.map(
+                            (duration, index) => (
+                              <option
+                                key={duration.duration}
+                                value={index}
+                              >
+                                {duration.duration}
+                              </option>
+                            )
+                          )}
+                        </select>
+
+                        <ChevronDown
+                          size={18}
+                          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                        />
+                      </div>
+
+                      <div className="mt-4 rounded-xl bg-[#0C4372]/5 p-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-3xl font-extrabold text-[#0C4372]">
+                            ₹
+                            {selectedDuration.price.toLocaleString(
+                              "en-IN"
+                            )}
+                          </span>
+
+                          {selectedDuration.originalPrice && (
+                            <span className="text-xs text-gray-400 line-through">
+                              ₹
+                              {selectedDuration.originalPrice.toLocaleString(
+                                "en-IN"
+                              )}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="mt-1 text-xs text-gray-500">
+                          {selectedDuration.duration} •
+                          one-time
+                        </p>
+
+                        {selectedDuration.offer && (
+                          <span className="mt-2 inline-block rounded-full bg-[#CAA035] px-2.5 py-1 text-[10px] font-bold text-white">
+                            {selectedDuration.offer}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="mt-6 flex-1">
+                        <h3 className="text-sm font-bold text-[#0C4372]">
+                          What&apos;s Included
+                        </h3>
+
+                        <ul className="mt-4 space-y-3">
+                          {plan.features.map((feature) => (
+                            <li
+                              key={feature}
+                              className="flex items-start gap-2 text-sm text-gray-600"
+                            >
+                              <Check
+                                size={16}
+                                className="mt-0.5 flex-shrink-0 text-[#0C4372]"
+                              />
+
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <button
+                        onClick={() =>
+                          handleChoosePlan(plan)
+                        }
+                        className="mt-7 w-full rounded-xl bg-[#0C4372] py-3.5 text-sm font-bold text-white transition hover:bg-[#09385F]"
+                      >
+                        Choose Plan →
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
+        </section>
 
-        </div>
-      </section>
+        {/* ================= BOTTOM MESSAGE ================= */}
 
+        <section className="pb-16 md:pb-20">
+          <div className="mx-auto max-w-4xl px-5 text-center">
+            <div className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm md:p-10">
+              <h3 className="text-2xl font-bold text-[#0C4372] md:text-3xl">
+                Your Health Deserves a Plan.
+              </h3>
 
-      {/* ================= BOTTOM MESSAGE ================= */}
-      <section className="pb-20">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-
-          <div className="bg-white rounded-3xl border border-gray-200 p-8 md:p-10 shadow-sm">
-
-            <h3 className="text-2xl md:text-3xl font-bold text-[#104F80]">
-              Your Health Deserves a Plan.
-            </h3>
-
-            <p className="mt-4 text-gray-600 leading-7 max-w-2xl mx-auto">
-              Whether you are just getting started or looking for long-term
-              support, choose a plan that fits your lifestyle and take one
-              step closer to a healthier tomorrow.
-            </p>
-
+              <p className="mx-auto mt-4 max-w-2xl leading-7 text-gray-600">
+                Choose the StayFit service that matches your
+                goals and start your journey towards a healthier
+                lifestyle.
+              </p>
+            </div>
           </div>
+        </section>
+      </main>
 
-        </div>
-      </section>
-
-    </main>
       <Footer />
     </>
   );
