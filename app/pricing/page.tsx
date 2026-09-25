@@ -231,10 +231,6 @@ export default function PackagesPage() {
 
   const [activePlan, setActivePlan] = useState(0);
 
-  // Direction of the last navigation, used to pick the slide-in animation
-  // (1 = moving forward / next, -1 = moving backward / previous)
-  const [slideDirection, setSlideDirection] = useState(1);
-
   // Mobile dropdown state
   const [mobileDropdownOpen, setMobileDropdownOpen] =
     useState(false);
@@ -289,7 +285,6 @@ export default function PackagesPage() {
   const goToPrevious = () => {
     setMobileDropdownOpen(false);
     setFeaturesExpanded(false);
-    setSlideDirection(-1);
 
     setActivePlan((previous) =>
       previous === 0
@@ -301,7 +296,6 @@ export default function PackagesPage() {
   const goToNext = () => {
     setMobileDropdownOpen(false);
     setFeaturesExpanded(false);
-    setSlideDirection(1);
 
     setActivePlan((previous) =>
       previous === servicePlans.length - 1
@@ -313,7 +307,6 @@ export default function PackagesPage() {
   const goToPlan = (index: number) => {
     setMobileDropdownOpen(false);
     setFeaturesExpanded(false);
-    setSlideDirection(index >= activePlan ? 1 : -1);
     setActivePlan(index);
   };
 
@@ -353,38 +346,8 @@ export default function PackagesPage() {
     <>
       <Navbar />
 
-      {/* Card slide-in animation (direction-aware) + hover lift */}
+      {/* Hover lift for plan cards */}
       <style jsx global>{`
-        @keyframes cardSlideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(36px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes cardSlideInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-36px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        .plan-card-enter-right {
-          animation: cardSlideInRight 0.3s ease-out;
-        }
-
-        .plan-card-enter-left {
-          animation: cardSlideInLeft 0.3s ease-out;
-        }
-
         .plan-card-hover {
           transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
@@ -483,23 +446,27 @@ export default function PackagesPage() {
 
             <div className="md:hidden overflow-hidden">
 
-              {(() => {
-                const plan = servicePlans[activePlan];
+              <div
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                className="flex touch-pan-y transition-transform duration-300 ease-out"
+                style={{
+                  transform: `translateX(-${activePlan * 100}%)`,
+                }}
+              >
 
+              {servicePlans.map((plan) => {
                 const selectedDuration =
                   getSelectedDuration(plan);
 
                 return (
                   <div
                     key={plan.id}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
-                    className={`${
-                      slideDirection === 1
-                        ? "plan-card-enter-right"
-                        : "plan-card-enter-left"
-                    } plan-card-hover relative touch-pan-y rounded-[18px] border bg-white shadow-sm ${
+                    className="w-full flex-shrink-0 px-0.5"
+                  >
+                  <div
+                    className={`plan-card-hover relative rounded-[18px] border bg-white shadow-sm ${
                       plan.popular
                         ? "border-[#CAA035]"
                         : "border-gray-200"
@@ -509,10 +476,8 @@ export default function PackagesPage() {
                     {/* Popular */}
 
                     {plan.popular && (
-                      <div className="absolute top-3 left-3">
-                        <span className="whitespace-nowrap rounded-full bg-[#CAA035] px-2 py-0.5 text-[8px] font-bold text-white shadow-sm">
-                          MOST POPULAR
-                        </span>
+                      <div className="absolute top-0 right-0 whitespace-nowrap rounded-tr-[18px] rounded-bl-xl bg-[#CAA035] px-4 py-1.5 text-[10px] font-bold text-white">
+                        Most Popular
                       </div>
                     )}
 
@@ -727,8 +692,11 @@ export default function PackagesPage() {
 
                     </div>
                   </div>
+                  </div>
                 );
-              })()}
+              })}
+
+              </div>
 
             </div>
 
@@ -756,10 +724,8 @@ export default function PackagesPage() {
                     {/* Popular */}
 
                     {plan.popular && (
-                      <div className="absolute top-3 left-3">
-                        <span className="whitespace-nowrap rounded-full bg-[#CAA035] px-2 py-0.5 text-[8px] font-bold text-white">
-                          MOST POPULAR
-                        </span>
+                      <div className="absolute top-0 right-0 whitespace-nowrap rounded-tr-2xl rounded-bl-xl bg-[#CAA035] px-3.5 py-1.5 text-[10px] font-bold text-white">
+                        Most Popular
                       </div>
                     )}
 
