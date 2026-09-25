@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
+  ArrowLeft,
   Search,
   RefreshCw,
-  Plus,
   X,
-  CalendarDays,
   CreditCard,
-  Users,
+  CalendarDays,
   Utensils,
   Dumbbell,
   Video,
@@ -38,111 +38,57 @@ type Subscription = {
   user: User;
 };
 
-const plans = [
-  {
-    name: "1 Month",
-    days: 30,
-  },
-  {
-    name: "3 Months",
-    days: 90,
-  },
-  {
-    name: "6 Months",
-    days: 180,
-  },
-  {
-    name: "12 Months",
-    days: 365,
-  },
-];
-
-const serviceOptions = [
-  {
-    value: "DIET" as ServiceType,
-    label: "Diet Plan",
-  },
-  {
-    value: "WORKOUT" as ServiceType,
-    label: "Workout Schedule",
-  },
-  {
-    value: "CONSULTATION" as ServiceType,
-    label: "Video Consultation",
-  },
-];
-
-export default function SubscriptionsPage() {
-  const [users, setUsers] = useState<User[]>([]);
+export default function ExpiredSubscriptionsPage() {
   const [subscriptions, setSubscriptions] = useState<
     Subscription[]
   >([]);
 
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [showDetails, setShowDetails] =
-    useState<Subscription | null>(null);
-
   const [search, setSearch] = useState("");
+
   const [serviceFilter, setServiceFilter] =
     useState<"ALL" | ServiceType>("ALL");
 
-  const [selectedUser, setSelectedUser] =
-    useState("");
+  const [showDetails, setShowDetails] =
+    useState<Subscription | null>(null);
 
-  const [selectedService, setSelectedService] =
-    useState<ServiceType | "">("");
-
-  const [selectedPlan, setSelectedPlan] =
-    useState("");
-
-  const [price, setPrice] = useState("");
-
-  const [submitting, setSubmitting] =
-    useState(false);
-
-  // Fetch users + subscriptions
-  const fetchData = async () => {
+  const fetchSubscriptions = async () => {
     try {
       setLoading(true);
 
-      const [
-        usersResponse,
-        subscriptionsResponse,
-      ] = await Promise.all([
-        fetch("/api/admin/users", {
+      const response = await fetch(
+        "/api/admin/subscriptions",
+        {
           cache: "no-store",
-        }),
-        fetch("/api/admin/subscriptions", {
-          cache: "no-store",
-        }),
-      ]);
+        }
+      );
 
-      const usersData = await usersResponse.json();
-      const subscriptionsData =
-        await subscriptionsResponse.json();
+      const data = await response.json();
 
-      if (!usersResponse.ok) {
+      if (!response.ok) {
         alert(
-          usersData.message ||
-            "Failed to load users."
-        );
-        return;
-      }
-
-      if (!subscriptionsResponse.ok) {
-        alert(
-          subscriptionsData.message ||
+          data.message ||
             "Failed to load subscriptions."
         );
         return;
       }
 
-      setUsers(usersData.users || []);
+      const now = new Date();
 
-      setSubscriptions(
-        subscriptionsData.subscriptions || []
-      );
+      const expired = (
+        data.subscriptions || []
+      ).filter((item: Subscription) => {
+        const endDate = new Date(
+          item.endDate
+        );
+
+        return (
+          item.status !== "ACTIVE" ||
+          endDate < now
+        );
+      });
+
+      setSubscriptions(expired);
     } catch (error) {
       console.error(error);
       alert("Something went wrong.");
@@ -152,10 +98,9 @@ export default function SubscriptionsPage() {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchSubscriptions();
   }, []);
 
-  // Filter subscriptions
   const filteredSubscriptions = useMemo(() => {
     const value = search
       .toLowerCase()
@@ -195,134 +140,39 @@ export default function SubscriptionsPage() {
     serviceFilter,
   ]);
 
-  const activeSubscriptions =
-    subscriptions.filter(
-      (item) => item.status === "ACTIVE"
-    ).length;
+  const dietCount = subscriptions.filter(
+    (item) =>
+      item.serviceType === "DIET"
+  ).length;
 
-  const expiredSubscriptions =
-    subscriptions.filter(
-      (item) => item.status !== "ACTIVE"
-    ).length;
+  const workoutCount = subscriptions.filter(
+    (item) =>
+      item.serviceType === "WORKOUT"
+  ).length;
 
-  const dietSubscriptions =
-    subscriptions.filter(
-      (item) =>
-        item.serviceType === "DIET"
-    ).length;
-
-  const workoutSubscriptions =
-    subscriptions.filter(
-      (item) =>
-        item.serviceType === "WORKOUT"
-    ).length;
-
-  const consultationSubscriptions =
+  const consultationCount =
     subscriptions.filter(
       (item) =>
         item.serviceType ===
         "CONSULTATION"
     ).length;
 
-  const handlePlanChange = (
-    value: string
+  const getExpiredDays = (
+    endDate: string
   ) => {
-    setSelectedPlan(value);
+    const now = new Date();
+    const end = new Date(endDate);
 
-    const plan = plans.find(
-      (item) => item.name === value
+    const difference =
+      now.getTime() - end.getTime();
+
+    return Math.max(
+      0,
+      Math.ceil(
+        difference /
+          (1000 * 60 * 60 * 24)
+      )
     );
-
-    if (plan) {
-      setPrice("");
-    }
-  };
-
-  const resetForm = () => {
-    setSelectedUser("");
-    setSelectedService("");
-    setSelectedPlan("");
-    setPrice("");
-  };
-
-  const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
-    e.preventDefault();
-
-    if (!selectedUser) {
-      alert("Please select a user.");
-      return;
-    }
-
-    if (!selectedService) {
-      alert("Please select a service.");
-      return;
-    }
-
-    if (!selectedPlan) {
-      alert("Please select a plan.");
-      return;
-    }
-
-    if (!price || Number(price) < 0) {
-      alert("Please enter a valid price.");
-      return;
-    }
-
-    const plan = plans.find(
-      (item) => item.name === selectedPlan
-    );
-
-    if (!plan) {
-      alert("Invalid plan.");
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-
-      const response = await fetch(
-        "/api/admin/subscriptions",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: Number(selectedUser),
-            serviceType: selectedService,
-            planName: plan.name,
-            durationDays: plan.days,
-            price: Number(price),
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(
-          data.message ||
-            "Failed to create subscription."
-        );
-        return;
-      }
-
-      alert(
-        "Subscription assigned successfully!"
-      );
-
-      resetForm();
-      setShowForm(false);
-
-      await fetchData();
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong.");
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   const formatDate = (date: string) => {
@@ -336,110 +186,72 @@ export default function SubscriptionsPage() {
     );
   };
 
-  const getServiceLabel = (
-    serviceType: ServiceType
-  ) => {
-    if (serviceType === "DIET") {
-      return "Diet Plan";
-    }
-
-    if (serviceType === "WORKOUT") {
-      return "Workout Schedule";
-    }
-
-    return "Video Consultation";
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
+          <div className="mb-3">
+            <Link
+              href="/admin/dashboard/subscriptions"
+              className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-[#0C4372]"
+            >
+              <ArrowLeft size={17} />
+              Back to All Subscriptions
+            </Link>
+          </div>
+
           <h1 className="text-2xl font-bold text-[#0C4372] sm:text-3xl">
-            All Subscriptions
+            Expired Subscriptions
           </h1>
 
           <p className="mt-1 text-sm text-gray-500">
-            Manage Diet, Workout and Video Consultation subscriptions.
+            View all expired Diet, Workout and Video Consultation subscriptions.
           </p>
         </div>
 
-        <div className="flex gap-2">
-          <button
-            onClick={fetchData}
-            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            <RefreshCw
-              size={17}
-              className={
-                loading
-                  ? "animate-spin"
-                  : ""
-              }
-            />
-            Refresh
-          </button>
-
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 rounded-lg bg-[#0C4372] px-4 py-2.5 text-sm font-medium text-white hover:opacity-90"
-          >
-            <Plus size={18} />
-            Assign Plan
-          </button>
-        </div>
+        <button
+          onClick={fetchSubscriptions}
+          className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          <RefreshCw
+            size={17}
+            className={
+              loading ? "animate-spin" : ""
+            }
+          />
+          Refresh
+        </button>
       </div>
 
       {/* Stats */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Total"
+          title="Total Expired"
           value={subscriptions.length}
           icon={<CreditCard size={22} />}
         />
 
         <StatCard
-          title="Active"
-          value={activeSubscriptions}
-          icon={<Users size={22} />}
-        />
-
-        <StatCard
-          title="Expired"
-          value={expiredSubscriptions}
-          icon={<CalendarDays size={22} />}
-        />
-
-        <StatCard
           title="Diet"
-          value={dietSubscriptions}
+          value={dietCount}
           icon={<Utensils size={22} />}
         />
 
         <StatCard
           title="Workout"
-          value={workoutSubscriptions}
+          value={workoutCount}
           icon={<Dumbbell size={22} />}
+        />
+
+        <StatCard
+          title="Consultation"
+          value={consultationCount}
+          icon={<Video size={22} />}
         />
       </div>
 
-      {/* Consultation summary */}
-      <div className="mb-6 rounded-xl bg-white p-4 shadow-sm">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-            <Video
-              size={18}
-              className="text-[#0C4372]"
-            />
-            Video Consultation:
-            <span className="font-bold text-[#0C4372]">
-              {consultationSubscriptions}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Search + Service Filter */}
+      {/* Search + Filter */}
       <div className="mb-6 rounded-xl bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
           <div className="relative flex-1">
@@ -489,7 +301,7 @@ export default function SubscriptionsPage() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Content */}
       {loading ? (
         <div className="rounded-xl bg-white p-10 text-center shadow-sm">
           <RefreshCw
@@ -498,23 +310,23 @@ export default function SubscriptionsPage() {
           />
 
           <p className="mt-3 text-sm text-gray-500">
-            Loading subscriptions...
+            Loading expired subscriptions...
           </p>
         </div>
       ) : filteredSubscriptions.length ===
         0 ? (
         <div className="rounded-xl bg-white p-10 text-center shadow-sm">
-          <CreditCard
+          <CalendarDays
             size={40}
             className="mx-auto text-gray-300"
           />
 
           <h3 className="mt-4 font-semibold text-gray-700">
-            No subscriptions found
+            No expired subscriptions found
           </h3>
 
           <p className="mt-1 text-sm text-gray-500">
-            Try changing the search or service filter.
+            Try changing your search or service filter.
           </p>
         </div>
       ) : (
@@ -542,11 +354,11 @@ export default function SubscriptionsPage() {
                     </th>
 
                     <th className="px-5 py-4">
-                      Start Date
+                      End Date
                     </th>
 
                     <th className="px-5 py-4">
-                      End Date
+                      Expired
                     </th>
 
                     <th className="px-5 py-4">
@@ -610,20 +422,23 @@ export default function SubscriptionsPage() {
 
                         <td className="px-5 py-4 text-sm text-gray-600">
                           {formatDate(
-                            item.startDate
-                          )}
-                        </td>
-
-                        <td className="px-5 py-4 text-sm text-gray-600">
-                          {formatDate(
                             item.endDate
                           )}
                         </td>
 
                         <td className="px-5 py-4">
-                          <StatusBadge
-                            status={item.status}
-                          />
+                          <span className="font-semibold text-red-600">
+                            {getExpiredDays(
+                              item.endDate
+                            )}{" "}
+                            days ago
+                          </span>
+                        </td>
+
+                        <td className="px-5 py-4">
+                          <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                            Expired
+                          </span>
                         </td>
 
                         <td className="px-5 py-4">
@@ -664,9 +479,9 @@ export default function SubscriptionsPage() {
                       </p>
                     </div>
 
-                    <StatusBadge
-                      status={item.status}
-                    />
+                    <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                      Expired
+                    </span>
                   </div>
 
                   <div className="mt-4">
@@ -689,17 +504,17 @@ export default function SubscriptionsPage() {
                     />
 
                     <InfoItem
-                      label="Start Date"
-                      value={formatDate(
-                        item.startDate
-                      )}
-                    />
-
-                    <InfoItem
                       label="End Date"
                       value={formatDate(
                         item.endDate
                       )}
+                    />
+
+                    <InfoItem
+                      label="Expired"
+                      value={`${getExpiredDays(
+                        item.endDate
+                      )} days ago`}
                     />
                   </div>
 
@@ -717,181 +532,6 @@ export default function SubscriptionsPage() {
             )}
           </div>
         </>
-      )}
-
-      {/* Assign Plan Modal */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl">
-            {/* Modal header */}
-            <div className="flex items-center justify-between border-b px-5 py-4">
-              <div>
-                <h2 className="text-xl font-bold text-[#0C4372]">
-                  Assign Plan
-                </h2>
-
-                <p className="mt-1 text-xs text-gray-500">
-                  Assign a Diet, Workout or Consultation subscription.
-                </p>
-              </div>
-
-              <button
-                onClick={() => {
-                  setShowForm(false);
-                  resetForm();
-                }}
-                className="rounded-full p-2 hover:bg-gray-100"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Form */}
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-5 p-5"
-            >
-              {/* User */}
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Select User
-                </label>
-
-                <select
-                  value={selectedUser}
-                  onChange={(e) =>
-                    setSelectedUser(
-                      e.target.value
-                    )
-                  }
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#0C4372]"
-                >
-                  <option value="">
-                    Select a user
-                  </option>
-
-                  {users.map((user) => (
-                    <option
-                      key={user.id}
-                      value={user.id}
-                    >
-                      {user.fullName} —{" "}
-                      {user.email}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Service */}
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Select Service
-                </label>
-
-                <select
-                  value={selectedService}
-                  onChange={(e) =>
-                    setSelectedService(
-                      e.target.value as
-                        | ServiceType
-                        | ""
-                    )
-                  }
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#0C4372]"
-                >
-                  <option value="">
-                    Select a service
-                  </option>
-
-                  {serviceOptions.map(
-                    (service) => (
-                      <option
-                        key={service.value}
-                        value={service.value}
-                      >
-                        {service.label}
-                      </option>
-                    )
-                  )}
-                </select>
-              </div>
-
-              {/* Plan */}
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Select Plan
-                </label>
-
-                <select
-                  value={selectedPlan}
-                  onChange={(e) =>
-                    handlePlanChange(
-                      e.target.value
-                    )
-                  }
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#0C4372]"
-                >
-                  <option value="">
-                    Select a plan
-                  </option>
-
-                  {plans.map((plan) => (
-                    <option
-                      key={plan.name}
-                      value={plan.name}
-                    >
-                      {plan.name} —{" "}
-                      {plan.days} days
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Price */}
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Price (₹)
-                </label>
-
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="Enter plan price"
-                  value={price}
-                  onChange={(e) =>
-                    setPrice(e.target.value)
-                  }
-                  className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#0C4372]"
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    resetForm();
-                  }}
-                  className="flex-1 rounded-lg border border-gray-200 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 rounded-lg bg-[#0C4372] py-3 text-sm font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {submitting
-                    ? "Assigning..."
-                    : "Assign Plan"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
       )}
 
       {/* Details Modal */}
@@ -985,12 +625,7 @@ export default function SubscriptionsPage() {
 
                   <InfoRow
                     label="Status"
-                    value={
-                      showDetails.status ===
-                      "ACTIVE"
-                        ? "Active"
-                        : "Expired"
-                    }
+                    value="Expired"
                   />
 
                   <InfoRow
@@ -1005,6 +640,13 @@ export default function SubscriptionsPage() {
                     value={formatDate(
                       showDetails.endDate
                     )}
+                  />
+
+                  <InfoRow
+                    label="Expired"
+                    value={`${getExpiredDays(
+                      showDetails.endDate
+                    )} days ago`}
                   />
 
                   <InfoRow
@@ -1060,26 +702,6 @@ function StatCard({
         </p>
       </div>
     </div>
-  );
-}
-
-function StatusBadge({
-  status,
-}: {
-  status: string;
-}) {
-  const active = status === "ACTIVE";
-
-  return (
-    <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-        active
-          ? "bg-green-100 text-green-700"
-          : "bg-red-100 text-red-700"
-      }`}
-    >
-      {active ? "Active" : "Expired"}
-    </span>
   );
 }
 
@@ -1159,4 +781,18 @@ function InfoRow({
       </span>
     </div>
   );
+}
+
+function getServiceLabel(
+  serviceType: ServiceType
+) {
+  if (serviceType === "DIET") {
+    return "Diet Plan";
+  }
+
+  if (serviceType === "WORKOUT") {
+    return "Workout Schedule";
+  }
+
+  return "Video Consultation";
 }

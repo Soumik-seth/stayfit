@@ -57,16 +57,26 @@ export default function AdminDashboard() {
 
   const [usersOpen, setUsersOpen] = useState(true);
   const [plansOpen, setPlansOpen] = useState(true);
+
   const [subscriptionsOpen, setSubscriptionsOpen] = useState(true);
-  const [dietManagementOpen, setDietManagementOpen] = useState(false);
-  const [workoutManagementOpen, setWorkoutManagementOpen] = useState(false);
-  const [videoConsultationOpen, setVideoConsultationOpen] = useState(false);
+
+ const [dietManagementOpen, setDietManagementOpen] = useState(false);
+
+const [workoutManagementOpen, setWorkoutManagementOpen] = useState(false);
+
+const [dietWorkoutManagementOpen, setDietWorkoutManagementOpen] =
+  useState(false);
+
+const [videoConsultationOpen, setVideoConsultationOpen] = useState(false);
 
   const [loading, setLoading] = useState(true);
+
   const [admin, setAdmin] = useState<Admin | null>(null);
+
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
   });
+
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -134,7 +144,10 @@ export default function AdminDashboard() {
         {/* Logo / Brand */}
         <div className="flex h-20 shrink-0 items-center justify-between border-b border-white/10 px-6">
           <div>
-            <h1 className="text-xl font-bold tracking-wide">StayFit</h1>
+            <h1 className="text-xl font-bold tracking-wide">
+              StayFit
+            </h1>
+
             <p className="mt-0.5 text-xs text-white/60">
               Admin Dashboard
             </p>
@@ -181,29 +194,49 @@ export default function AdminDashboard() {
             {usersOpen && (
               <div className="ml-4 mt-1 space-y-1 border-l border-white/10 pl-3">
                 <button
-                  onClick={() => goTo("/admin/dashboard/users")}
+                  onClick={() =>
+                    goTo("/admin/dashboard/users")
+                  }
                   className="w-full rounded-lg px-3 py-2 text-left text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
                   All Users
                 </button>
 
                 <button
-                  onClick={() => goTo("/admin/dashboard/diet-users")}
+                  onClick={() =>
+                    goTo("/admin/dashboard/diet-users")
+                  }
                   className="w-full rounded-lg px-3 py-2 text-left text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
                   Diet Users
                 </button>
 
                 <button
-                  onClick={() => goTo("/admin/dashboard/workout-users")}
+                  onClick={() =>
+                    goTo("/admin/dashboard/workout-users")
+                  }
                   className="w-full rounded-lg px-3 py-2 text-left text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
                   Workout Users
                 </button>
 
+                {/* NEW: Diet + Workout Users */}
                 <button
                   onClick={() =>
-                    goTo("/admin/dashboard/consultation-users")
+                    goTo(
+                      "/admin/dashboard/diet-workout-users"
+                    )
+                  }
+                  className="w-full rounded-lg px-3 py-2 text-left text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
+                >
+                  Diet + Workout Users
+                </button>
+
+                <button
+                  onClick={() =>
+                    goTo(
+                      "/admin/dashboard/consultation-users"
+                    )
                   }
                   className="w-full rounded-lg px-3 py-2 text-left text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
@@ -252,9 +285,23 @@ export default function AdminDashboard() {
                   Workout Plans
                 </button>
 
+                {/* NEW: Diet + Workout Plans */}
                 <button
                   onClick={() =>
-                    goTo("/admin/dashboard/plans/consultation")
+                    goTo(
+                      "/admin/dashboard/plans/diet-workout"
+                    )
+                  }
+                  className="w-full rounded-lg px-3 py-2 text-left text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
+                >
+                  Diet + Workout Plans
+                </button>
+
+                <button
+                  onClick={() =>
+                    goTo(
+                      "/admin/dashboard/plans/consultation"
+                    )
                   }
                   className="w-full rounded-lg px-3 py-2 text-left text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
@@ -298,7 +345,9 @@ export default function AdminDashboard() {
 
                 <button
                   onClick={() =>
-                    goTo("/admin/dashboard/subscriptions/active")
+                    goTo(
+                      "/admin/dashboard/subscriptions/active"
+                    )
                   }
                   className="w-full rounded-lg px-3 py-2 text-left text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
@@ -307,7 +356,9 @@ export default function AdminDashboard() {
 
                 <button
                   onClick={() =>
-                    goTo("/admin/dashboard/subscriptions/expired")
+                    goTo(
+                      "/admin/dashboard/subscriptions/expired"
+                    )
                   }
                   className="w-full rounded-lg px-3 py-2 text-left text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
@@ -321,7 +372,9 @@ export default function AdminDashboard() {
           <div className="mb-2">
             <button
               onClick={() =>
-                setDietManagementOpen(!dietManagementOpen)
+                setDietManagementOpen(
+                  !dietManagementOpen
+                )
               }
               className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-white/90 transition hover:bg-white/10"
             >
@@ -342,7 +395,9 @@ export default function AdminDashboard() {
               <div className="ml-4 mt-1 space-y-1 border-l border-white/10 pl-3">
                 <button
                   onClick={() =>
-                    goTo("/admin/dashboard/diet-management/plans")
+                    goTo(
+                      "/admin/dashboard/diet-management/plans"
+                    )
                   }
                   className="w-full rounded-lg px-3 py-2 text-left text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
                 >
@@ -381,7 +436,9 @@ export default function AdminDashboard() {
               <ChevronDown
                 size={17}
                 className={`transition-transform ${
-                  workoutManagementOpen ? "rotate-180" : ""
+                  workoutManagementOpen
+                    ? "rotate-180"
+                    : ""
                 }`}
               />
             </button>
@@ -413,6 +470,49 @@ export default function AdminDashboard() {
             )}
           </div>
 
+{/* Diet + Workout Management */}
+<div className="mb-2">
+  <button
+    onClick={() =>
+      setDietWorkoutManagementOpen(
+        !dietWorkoutManagementOpen
+      )
+    }
+    className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-white/90 transition hover:bg-white/10"
+  >
+    <span className="flex items-center gap-3">
+      <Activity size={19} />
+      Diet + Workout Management
+    </span>
+
+    <ChevronDown
+      size={17}
+      className={`transition-transform ${
+        dietWorkoutManagementOpen
+          ? "rotate-180"
+          : ""
+      }`}
+    />
+  </button>
+
+  {dietWorkoutManagementOpen && (
+    <div className="ml-4 mt-1 space-y-1 border-l border-white/10 pl-3">
+      <button
+        onClick={() =>
+          goTo(
+            "/admin/dashboard/diet-workout-management"
+          )
+        }
+        className="w-full rounded-lg px-3 py-2 text-left text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
+      >
+        Manage Diet + Workout Users
+      </button>
+    </div>
+  )}
+</div>
+
+          
+
           {/* Video Consultation */}
           <div className="mb-2">
             <button
@@ -431,7 +531,9 @@ export default function AdminDashboard() {
               <ChevronDown
                 size={17}
                 className={`transition-transform ${
-                  videoConsultationOpen ? "rotate-180" : ""
+                  videoConsultationOpen
+                    ? "rotate-180"
+                    : ""
                 }`}
               />
             </button>
@@ -543,7 +645,9 @@ export default function AdminDashboard() {
               <div className="hidden items-center gap-3 border-l border-gray-200 pl-3 sm:flex">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0C4372] text-sm font-bold text-white">
                   {admin?.fullName
-                    ? admin.fullName.charAt(0).toUpperCase()
+                    ? admin.fullName
+                        .charAt(0)
+                        .toUpperCase()
                     : "A"}
                 </div>
 
@@ -883,6 +987,38 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
+
+              {/* Diet + Workout Management */}
+<div className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50">
+    <Activity
+      size={23}
+      className="text-[#0C4372]"
+    />
+  </div>
+
+  <h3 className="mt-5 text-lg font-bold text-gray-800">
+    Diet + Workout Management
+  </h3>
+
+  <p className="mt-2 text-sm leading-6 text-gray-500">
+    Manage combined diet, workout, images, PDF and video consultation requests.
+  </p>
+
+  <button
+    onClick={() =>
+      goTo("/admin/dashboard/diet-workout-management")
+    }
+    className="mt-5 flex items-center gap-2 text-sm font-semibold text-[#0C4372]"
+  >
+    Open Management
+    <ArrowRight
+      size={16}
+      className="transition group-hover:translate-x-1"
+    />
+  </button>
+</div>
+
               {/* Video Consultation */}
               <div className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50">
@@ -1106,7 +1242,8 @@ export default function AdminDashboard() {
                         </p>
 
                         <p className="mt-1 text-xs text-gray-500">
-                          {user.phoneNumber || "No phone number"}
+                          {user.phoneNumber ||
+                            "No phone number"}
                         </p>
 
                         <p className="mt-2 text-xs text-gray-400">

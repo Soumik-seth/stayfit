@@ -57,6 +57,7 @@ export async function GET() {
       },
       select: {
         id: true,
+        serviceType: true,
         planName: true,
         durationDays: true,
         price: true,
@@ -87,7 +88,9 @@ export async function GET() {
     console.error("Get subscriptions error:", error);
 
     return NextResponse.json(
-      { message: "Something went wrong." },
+      {
+        message: "Something went wrong.",
+      },
       { status: 500 }
     );
   }
@@ -100,7 +103,9 @@ export async function POST(request: Request) {
 
     if (!admin) {
       return NextResponse.json(
-        { message: "Access denied. Admin only." },
+        {
+          message: "Access denied. Admin only.",
+        },
         { status: 403 }
       );
     }
@@ -109,10 +114,29 @@ export async function POST(request: Request) {
 
     const {
       userId,
+      serviceType,
       planName,
       durationDays,
       price,
     } = body;
+
+    /* Validate service type */
+    const allowedServiceTypes = [
+      "DIET",
+      "WORKOUT",
+      "DIET_WORKOUT",
+      "CONSULTATION",
+    ];
+
+    if (!allowedServiceTypes.includes(serviceType)) {
+      return NextResponse.json(
+        {
+          message:
+            "Valid service type is required. Use DIET, WORKOUT, DIET_WORKOUT or CONSULTATION.",
+        },
+        { status: 400 }
+      );
+    }
 
     if (
       !userId ||
@@ -160,6 +184,7 @@ export async function POST(request: Request) {
       await prisma.subscription.create({
         data: {
           userId: Number(userId),
+          serviceType: String(serviceType),
           planName: String(planName),
           durationDays: Number(durationDays),
           price: Number(price),

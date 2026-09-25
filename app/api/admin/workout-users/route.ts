@@ -45,7 +45,7 @@ export async function GET() {
 
     const subscriptions = await prisma.subscription.findMany({
       where: {
-        serviceType: "DIET",
+        serviceType: "WORKOUT",
       },
 
       orderBy: {
@@ -97,7 +97,7 @@ export async function GET() {
 
     const now = new Date();
 
-    const dietUsers = subscriptions.map((subscription) => {
+    const workoutUsers = subscriptions.map((subscription) => {
       const startDate = new Date(subscription.startDate);
       const endDate = new Date(subscription.endDate);
 
@@ -119,10 +119,6 @@ export async function GET() {
       return {
         subscriptionId: subscription.id,
 
-        /*
-         * IMPORTANT:
-         * Frontend expects user data inside item.user
-         */
         user: {
           id: subscription.user.id,
           fullName: subscription.user.fullName,
@@ -166,17 +162,17 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      dietUsers,
+      workoutUsers,
     });
   } catch (error) {
     console.error(
-      "Diet users API error:",
+      "Workout users API error:",
       error
     );
 
     return NextResponse.json(
       {
-        error: "Failed to fetch diet users",
+        error: "Failed to fetch workout users",
       },
       {
         status: 500,

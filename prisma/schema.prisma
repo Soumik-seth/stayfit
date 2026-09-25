@@ -56,22 +56,24 @@ model WeightHistory {
 }
 
 model Subscription {
-  id           Int      @id @default(autoincrement())
-  userId       Int
-  planName     String
-  durationDays Int
-  price        Float
-  startDate    DateTime
-  endDate      DateTime
-  status       String   @default("ACTIVE")
-  paymentId    String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  serviceType   String
+  planName      String
+  durationDays  Int
+  price         Float
+  startDate     DateTime
+  endDate       DateTime
+  status        String   @default("ACTIVE")
+  paymentId     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
+  @@index([serviceType])
 }
 
 model DietPlan {
@@ -113,4 +115,19 @@ model VideoCallRequest {
 
   @@index([userId])
   @@index([status])
+}
+
+model Plan {
+  id           Int      @id @default(autoincrement())
+  serviceType  String
+  planName     String
+  durationDays Int
+  price        Float
+  features     String[]
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([serviceType])
+  @@index([isActive])
 }
