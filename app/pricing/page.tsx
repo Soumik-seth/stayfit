@@ -320,6 +320,33 @@ export default function PackagesPage() {
     <>
       <Navbar />
 
+      {/* Card entrance animation (plays whenever the mobile card swaps) + hover lift */}
+      <style jsx global>{`
+        @keyframes cardRiseUp {
+          from {
+            opacity: 0;
+            transform: translateY(14px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .plan-card-enter {
+          animation: cardRiseUp 0.35s ease-out;
+        }
+
+        .plan-card-hover {
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .plan-card-hover:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px -8px rgba(12, 67, 114, 0.18);
+        }
+      `}</style>
+
       <main className="min-h-screen bg-[#f8fafb]">
 
         {/* ================= HERO ================= */}
@@ -405,10 +432,11 @@ export default function PackagesPage() {
 
                 return (
                   <div
+                    key={plan.id}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
-                    className={`relative touch-pan-y rounded-[18px] border bg-white shadow-sm ${
+                    className={`plan-card-enter plan-card-hover relative touch-pan-y rounded-[18px] border bg-white shadow-sm ${
                       plan.popular
                         ? "border-[#CAA035]"
                         : "border-gray-200"
@@ -620,7 +648,7 @@ export default function PackagesPage() {
                 return (
                   <div
                     key={plan.id}
-                    className={`relative flex flex-col rounded-2xl border bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg ${
+                    className={`plan-card-hover relative flex flex-col rounded-2xl border bg-white shadow-sm ${
                       plan.popular
                         ? "border-[#CAA035]"
                         : "border-gray-200"
