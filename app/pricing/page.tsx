@@ -211,6 +211,16 @@ export default function PackagesPage() {
 
   const [activePlan, setActivePlan] = useState(0);
 
+  // Duration dropdown open state (mobile card + desktop cards)
+  const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
+  const [openDesktopDropdownId, setOpenDesktopDropdownId] = useState<
+    number | null
+  >(null);
+
+  // Touch/swipe state for mobile card slider
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+
   const getSelectedDuration = (plan: ServicePlan) => {
     return (
       plan.durations[selectedDurations[plan.id] ?? 0] ??
@@ -243,6 +253,7 @@ export default function PackagesPage() {
   };
 
   const goToPrevious = () => {
+    setMobileDropdownOpen(false);
     setActivePlan((previous) =>
       previous === 0
         ? servicePlans.length - 1
@@ -251,11 +262,44 @@ export default function PackagesPage() {
   };
 
   const goToNext = () => {
+    setMobileDropdownOpen(false);
     setActivePlan((previous) =>
       previous === servicePlans.length - 1
         ? 0
         : previous + 1
     );
+  };
+
+  // Swipe handlers for the mobile plan card
+  const handleTouchStart = (
+    event: React.TouchEvent<HTMLDivElement>
+  ) => {
+    setTouchEndX(null);
+    setTouchStartX(event.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (
+    event: React.TouchEvent<HTMLDivElement>
+  ) => {
+    setTouchEndX(event.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX === null || touchEndX === null) return;
+
+    const distance = touchStartX - touchEndX;
+    const swipeThreshold = 50;
+
+    if (distance > swipeThreshold) {
+      // swiped left -> next plan
+      goToNext();
+    } else if (distance < -swipeThreshold) {
+      // swiped right -> previous plan
+      goToPrevious();
+    }
+
+    setTouchStartX(null);
+    setTouchEndX(null);
   };
 
   return (
@@ -307,7 +351,10 @@ export default function PackagesPage() {
                 {servicePlans.map((plan, index) => (
                   <button
                     key={plan.id}
-                    onClick={() => setActivePlan(index)}
+                    onClick={() => {
+                      setMobileDropdownOpen(false);
+                      setActivePlan(index);
+                    }}
                     aria-label={`Go to ${plan.name}`}
                     className={`h-2.5 rounded-full transition-all ${
                       activePlan === index
@@ -337,7 +384,10 @@ export default function PackagesPage() {
 
                 return (
                   <div
-                    className={`relative rounded-[26px] border bg-white shadow-sm ${
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    className={`relative touch-pan-y rounded-[20px] border bg-white shadow-sm ${
                       plan.popular
                         ? "border-[#CAA035]"
                         : "border-gray-200"
@@ -351,61 +401,76 @@ export default function PackagesPage() {
                       </div>
                     )}
 
-                    <div className="p-6">
+                    <div className="p-5">
                       {/* Icon + title */}
 
                       <div className="text-center">
-                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#0C4372]/10 text-3xl">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#0C4372]/10 text-2xl">
                           {plan.icon}
                         </div>
 
-                        <h2 className="mt-4 text-2xl font-bold text-[#0C4372]">
+                        <h2 className="mt-3 text-xl font-bold text-[#0C4372]">
                           {plan.name}
                         </h2>
 
-                        <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-gray-500">
+                        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-gray-500">
                           {plan.description}
                         </p>
                       </div>
 
-                      {/* Duration */}
+                      {/* Duration - custom dropdown, opens below */}
 
-                      <div className="relative mt-6">
-                        <select
-                          value={
-                            selectedDurations[plan.id] ?? 0
+                      <div className="relative mt-5">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setMobileDropdownOpen((open) => !open)
                           }
-                          onChange={(event) =>
-                            handleDurationChange(
-                              plan.id,
-                              Number(event.target.value)
-                            )
-                          }
-                          className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-4 py-4 pr-12 text-base font-semibold text-gray-800 outline-none focus:border-[#0C4372]"
+                          className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-4 text-base font-semibold text-gray-800 outline-none focus:border-[#0C4372]"
                         >
-                          {plan.durations.map(
-                            (duration, index) => (
-                              <option
-                                key={duration.duration}
-                                value={index}
-                              >
-                                {duration.duration}
-                              </option>
-                            )
-                          )}
-                        </select>
+                          <span>{selectedDuration.duration}</span>
+                          <ChevronDown
+                            size={20}
+                            className={`text-gray-500 transition-transform ${
+                              mobileDropdownOpen ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
 
-                        <ChevronDown
-                          size={20}
-                          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
-                        />
+                        {mobileDropdownOpen && (
+                          <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
+                            {plan.durations.map(
+                              (duration, index) => (
+                                <button
+                                  key={duration.duration}
+                                  type="button"
+                                  onClick={() => {
+                                    handleDurationChange(
+                                      plan.id,
+                                      index
+                                    );
+                                    setMobileDropdownOpen(false);
+                                  }}
+                                  className={`block w-full px-4 py-3 text-left text-sm font-medium ${
+                                    (selectedDurations[plan.id] ?? 0) ===
+                                    index
+                                      ? "bg-[#0C4372]/5 text-[#0C4372]"
+                                      : "text-gray-700 hover:bg-gray-50"
+                                  }`}
+                                >
+                                  {duration.duration}
+                                </button>
+                              )
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       {/* Price */}
 
-                      <div className="mt-5 rounded-2xl bg-[#0C4372]/5 px-5 py-5 text-center">
+                      <div className="mt-4 rounded-2xl bg-[#0C4372]/5 px-5 py-4 text-center">
                         <div className="flex items-center justify-center gap-3">
-                          <span className="text-4xl font-extrabold text-[#0C4372]">
+                          <span className="text-3xl font-extrabold text-[#0C4372]">
                             ₹
                             {selectedDuration.price.toLocaleString(
                               "en-IN"
@@ -426,22 +491,16 @@ export default function PackagesPage() {
                           {selectedDuration.duration} •
                           one-time
                         </p>
-
-                        {selectedDuration.offer && (
-                          <span className="mt-3 inline-block rounded-full bg-[#CAA035] px-3 py-1 text-xs font-bold text-white">
-                            {selectedDuration.offer}
-                          </span>
-                        )}
                       </div>
 
                       {/* Features */}
 
-                      <div className="mt-7">
-                        <h3 className="text-lg font-bold text-[#0C4372]">
+                      <div className="mt-6">
+                        <h3 className="text-base font-bold text-[#0C4372]">
                           What&apos;s Included
                         </h3>
 
-                        <ul className="mt-4 space-y-3">
+                        <ul className="mt-3 space-y-2.5">
                           {plan.features
                             .slice(0, 4)
                             .map((feature) => (
@@ -464,7 +523,7 @@ export default function PackagesPage() {
                         {plan.features.length > 4 && (
                           <button
                             type="button"
-                            className="mt-5 w-full text-center text-sm font-semibold text-[#0C4372]"
+                            className="mt-4 w-full text-center text-sm font-semibold text-[#0C4372]"
                           >
                             See More (
                             {plan.features.length})
@@ -478,7 +537,7 @@ export default function PackagesPage() {
                         onClick={() =>
                           handleChoosePlan(plan)
                         }
-                        className="mt-7 w-full rounded-2xl bg-[#0C4372] py-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#09385F]"
+                        className="mt-6 w-full rounded-2xl bg-[#0C4372] py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#09385F]"
                       >
                         Choose {plan.name}
                         <span className="ml-2">→</span>
@@ -495,11 +554,13 @@ export default function PackagesPage() {
               {servicePlans.map((plan) => {
                 const selectedDuration =
                   getSelectedDuration(plan);
+                const isDropdownOpen =
+                  openDesktopDropdownId === plan.id;
 
                 return (
                   <div
                     key={plan.id}
-                    className={`relative flex flex-col rounded-3xl border bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                    className={`relative flex flex-col rounded-2xl border bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl ${
                       plan.popular
                         ? "border-[#CAA035]"
                         : "border-gray-200"
@@ -513,55 +574,72 @@ export default function PackagesPage() {
                       </div>
                     )}
 
-                    <div className="flex h-full flex-col p-6">
+                    <div className="flex h-full flex-col p-5">
                       <div className="text-center">
-                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#0C4372]/10 text-2xl">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#0C4372]/10 text-xl">
                           {plan.icon}
                         </div>
 
-                        <h2 className="mt-4 text-xl font-bold text-[#0C4372]">
+                        <h2 className="mt-3 text-lg font-bold text-[#0C4372]">
                           {plan.name}
                         </h2>
 
-                        <p className="mt-3 text-sm leading-6 text-gray-500">
+                        <p className="mt-2 text-sm leading-6 text-gray-500">
                           {plan.description}
                         </p>
                       </div>
 
-                      <div className="relative mt-5">
-                        <select
-                          value={
-                            selectedDurations[plan.id] ?? 0
-                          }
-                          onChange={(event) =>
-                            handleDurationChange(
-                              plan.id,
-                              Number(event.target.value)
+                      <div className="relative mt-4">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setOpenDesktopDropdownId((current) =>
+                              current === plan.id ? null : plan.id
                             )
                           }
-                          className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-3 pr-10 text-sm font-semibold text-gray-800 outline-none focus:border-[#0C4372]"
+                          className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-[#0C4372]"
                         >
-                          {plan.durations.map(
-                            (duration, index) => (
-                              <option
-                                key={duration.duration}
-                                value={index}
-                              >
-                                {duration.duration}
-                              </option>
-                            )
-                          )}
-                        </select>
+                          <span>{selectedDuration.duration}</span>
+                          <ChevronDown
+                            size={18}
+                            className={`text-gray-500 transition-transform ${
+                              isDropdownOpen ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
 
-                        <ChevronDown
-                          size={18}
-                          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-                        />
+                        {isDropdownOpen && (
+                          <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                            {plan.durations.map(
+                              (duration, index) => (
+                                <button
+                                  key={duration.duration}
+                                  type="button"
+                                  onClick={() => {
+                                    handleDurationChange(
+                                      plan.id,
+                                      index
+                                    );
+                                    setOpenDesktopDropdownId(null);
+                                  }}
+                                  className={`block w-full px-4 py-2.5 text-left text-sm font-medium ${
+                                    (selectedDurations[plan.id] ?? 0) ===
+                                    index
+                                      ? "bg-[#0C4372]/5 text-[#0C4372]"
+                                      : "text-gray-700 hover:bg-gray-50"
+                                  }`}
+                                >
+                                  {duration.duration}
+                                </button>
+                              )
+                            )}
+                          </div>
+                        )}
                       </div>
 
-                      <div className="mt-4 rounded-xl bg-[#0C4372]/5 p-4 text-center">
+                      <div className="mt-3 rounded-xl bg-[#0C4372]/5 p-3.5 text-center">
                         <div className="flex items-center justify-center gap-2">
-                          <span className="text-3xl font-extrabold text-[#0C4372]">
+                          <span className="text-2xl font-extrabold text-[#0C4372]">
                             ₹
                             {selectedDuration.price.toLocaleString(
                               "en-IN"
@@ -582,20 +660,14 @@ export default function PackagesPage() {
                           {selectedDuration.duration} •
                           one-time
                         </p>
-
-                        {selectedDuration.offer && (
-                          <span className="mt-2 inline-block rounded-full bg-[#CAA035] px-2.5 py-1 text-[10px] font-bold text-white">
-                            {selectedDuration.offer}
-                          </span>
-                        )}
                       </div>
 
-                      <div className="mt-6 flex-1">
+                      <div className="mt-5 flex-1">
                         <h3 className="text-sm font-bold text-[#0C4372]">
                           What&apos;s Included
                         </h3>
 
-                        <ul className="mt-4 space-y-3">
+                        <ul className="mt-3 space-y-2.5">
                           {plan.features.map((feature) => (
                             <li
                               key={feature}
@@ -616,7 +688,7 @@ export default function PackagesPage() {
                         onClick={() =>
                           handleChoosePlan(plan)
                         }
-                        className="mt-7 w-full rounded-xl bg-[#0C4372] py-3.5 text-sm font-bold text-white transition hover:bg-[#09385F]"
+                        className="mt-6 w-full rounded-xl bg-[#0C4372] py-3 text-sm font-bold text-white transition hover:bg-[#09385F]"
                       >
                         Choose Plan →
                       </button>
