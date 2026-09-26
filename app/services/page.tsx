@@ -9,6 +9,9 @@ import {
   CheckCircle2,
   Sparkles,
   HeartPulse,
+  Salad,
+  Banana,
+  Egg,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -80,6 +83,8 @@ const steps = [
     text: "Get personalized support and start working towards your goals.",
   },
 ];
+
+const dietSymbols = [Apple, Salad, Banana, Egg];
 
 export default function ServicesPage() {
   const [visibleCards, setVisibleCards] = useState<number[]>([]);
@@ -666,6 +671,36 @@ export default function ServicesPage() {
         </section>
 
       </main>
+
+
+      {/* ========================================================= */}
+      {/* DIET SYMBOLS - ROTATING INFINITE LOOP (ABOVE FOOTER) */}
+      {/* ========================================================= */}
+
+      <section className="relative overflow-hidden bg-white px-5 py-10 sm:px-8 sm:py-14">
+
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-8 sm:gap-14 md:gap-20">
+
+          {dietSymbols.map((Icon, idx) => (
+
+            <div
+              key={idx}
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-[#0C4372]/10 sm:h-20 sm:w-20"
+            >
+
+              <Icon
+                size={30}
+                strokeWidth={1.6}
+                className="animate-[spinSlow_6s_linear_infinite] text-[#0C4372]"
+              />
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </section>
 
 
       {/* ========================================================= */}
