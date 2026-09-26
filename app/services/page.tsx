@@ -674,29 +674,75 @@ export default function ServicesPage() {
 
 
       {/* ========================================================= */}
-      {/* DIET SYMBOLS - ROTATING INFINITE LOOP (ABOVE FOOTER) */}
+      {/* DIET SYMBOLS - ORBITING AROUND CENTER (ABOVE FOOTER) */}
       {/* ========================================================= */}
 
-      <section className="relative overflow-hidden bg-white px-5 py-10 sm:px-8 sm:py-14">
+      <section className="relative overflow-hidden bg-white px-5 py-14 sm:px-8 sm:py-20">
 
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-8 sm:gap-14 md:gap-20">
+        <div className="relative mx-auto flex h-[240px] w-[240px] items-center justify-center sm:h-[300px] sm:w-[300px] md:h-[340px] md:w-[340px]">
 
-          {dietSymbols.map((Icon, idx) => (
+          {/* Dashed Orbit Path */}
 
-            <div
-              key={idx}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-[#0C4372]/10 sm:h-20 sm:w-20"
-            >
+          <div className="pointer-events-none absolute inset-0 rounded-full border border-dashed border-[#CAA035]/25" />
 
-              <Icon
-                size={30}
-                strokeWidth={1.6}
-                className="animate-[spinSlow_6s_linear_infinite] text-[#0C4372]"
-              />
+          {/* Center Sun */}
 
-            </div>
+          <div className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-[#0C4372] shadow-lg sm:h-16 sm:w-16">
 
-          ))}
+            <span className="absolute inset-[-6px] animate-[goldGlow_3s_ease-in-out_infinite] rounded-full bg-[#CAA035]/25 blur-md" />
+
+            <HeartPulse
+              size={26}
+              strokeWidth={1.8}
+              className="relative text-[#CAA035]"
+            />
+
+          </div>
+
+          {/* Orbiting Diet Symbols */}
+
+          {dietSymbols.map((Icon, idx) => {
+
+            const duration = 14 + idx * 4;
+
+            const delay = -(idx * (duration / dietSymbols.length));
+
+            return (
+
+              <div
+                key={idx}
+                className="orbit-path absolute inset-0"
+                style={{
+                  animationDuration: `${duration}s`,
+                  animationDelay: `${delay}s`,
+                }}
+              >
+
+                <div
+                  className="orbit-counter absolute left-1/2 top-0"
+                  style={{
+                    animationDuration: `${duration}s`,
+                    animationDelay: `${delay}s`,
+                  }}
+                >
+
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#CAA035]/30 bg-white shadow-md sm:h-14 sm:w-14">
+
+                    <Icon
+                      size={20}
+                      strokeWidth={1.8}
+                      className="text-[#0C4372] sm:h-6 sm:w-6"
+                    />
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            );
+
+          })}
 
         </div>
 
@@ -1253,6 +1299,52 @@ export default function ServicesPage() {
           .service-card {
             box-shadow:
               0 10px 30px rgba(12, 67, 114, 0.08);
+          }
+
+        }
+
+
+        /* ======================================================= */
+        /* ORBIT (PLANETS AROUND SUN) */
+        /* ======================================================= */
+
+        .orbit-path {
+          transform-origin: 50% 50%;
+          animation-name: orbitSpin;
+          animation-timing-function: linear;
+          animation-iteration-count: infinite;
+        }
+
+
+        .orbit-counter {
+          transform: translate(-50%, -50%);
+          animation-name: orbitCounterSpin;
+          animation-timing-function: linear;
+          animation-iteration-count: infinite;
+        }
+
+
+        @keyframes orbitSpin {
+
+          from {
+            transform: rotate(0deg);
+          }
+
+          to {
+            transform: rotate(360deg);
+          }
+
+        }
+
+
+        @keyframes orbitCounterSpin {
+
+          from {
+            transform: translate(-50%, -50%) rotate(0deg);
+          }
+
+          to {
+            transform: translate(-50%, -50%) rotate(-360deg);
           }
 
         }
