@@ -314,19 +314,46 @@ export default function PackagesPage() {
     }));
   };
 
-  const handleChoosePlan = (plan: ServicePlan) => {
+const handleChoosePlan = async (plan: ServicePlan) => {
+  try {
     const selectedDuration = getSelectedDuration(plan);
 
-    console.log("Selected Plan:", {
+    const response = await fetch("/api/me", {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      window.location.href = `/login?redirect=/pricing`;
+      return;
+    }
+
+    const user = await response.json();
+
+    if (!user?.id) {
+      window.location.href = `/login?redirect=/pricing`;
+      return;
+    }
+
+    const purchaseData = {
       type: plan.type,
       name: plan.name,
       duration: selectedDuration.duration,
       price: selectedDuration.price,
-    });
+    };
 
-    // Login check, coupon and test purchase
-    // will be added in the next steps.
-  };
+    sessionStorage.setItem(
+      "stayfit_selected_plan",
+      JSON.stringify(purchaseData)
+    );
+
+    window.location.href = "/pricing/purchase";
+  } catch (error) {
+    console.error("Plan selection error:", error);
+    alert("Something went wrong. Please try again.");
+  }
+};
 
   const goToPrevious = () => {
     setMobileDropdownOpen(false);
