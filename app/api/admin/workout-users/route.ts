@@ -8,7 +8,9 @@ const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
 });
 
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient({
+  adapter,
+});
 
 async function checkAdmin() {
   const cookieStore = await cookies();
@@ -43,127 +45,180 @@ export async function GET() {
       );
     }
 
-    const subscriptions = await prisma.subscription.findMany({
-      where: {
-        serviceType: "WORKOUT",
-      },
+    /*
+     * Only WORKOUT subscriptions
+     * will be shown here.
+     */
+    const subscriptions =
+      await prisma.subscription.findMany({
+        where: {
+          serviceType: "WORKOUT",
+        },
 
-      orderBy: {
-        createdAt: "desc",
-      },
+        orderBy: {
+          createdAt: "desc",
+        },
 
-      select: {
-        id: true,
-        serviceType: true,
-        planName: true,
-        durationDays: true,
-        price: true,
-        startDate: true,
-        endDate: true,
-        status: true,
-        paymentId: true,
-        createdAt: true,
+        select: {
+          id: true,
+          serviceType: true,
+          planName: true,
+          durationDays: true,
+          price: true,
+          startDate: true,
+          endDate: true,
+          status: true,
+          paymentId: true,
+          createdAt: true,
 
-        user: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-            phoneNumber: true,
-            dateOfBirth: true,
-            weight: true,
-            height: true,
-            gender: true,
-            bodyFat: true,
-            muscleMass: true,
-            visceralFat: true,
-            createdAt: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phoneNumber: true,
 
-            weightHistory: {
-              orderBy: {
-                createdAt: "desc",
-              },
+              dateOfBirth: true,
+              weight: true,
+              height: true,
+              gender: true,
 
-              select: {
-                id: true,
-                weight: true,
-                createdAt: true,
+              bodyFat: true,
+              muscleMass: true,
+              visceralFat: true,
+
+              createdAt: true,
+
+              weightHistory: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+
+                select: {
+                  id: true,
+                  weight: true,
+                  createdAt: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
 
     const now = new Date();
 
-    const workoutUsers = subscriptions.map((subscription) => {
-      const startDate = new Date(subscription.startDate);
-      const endDate = new Date(subscription.endDate);
+    const workoutUsers =
+      subscriptions.map((subscription) => {
+        const startDate = new Date(
+          subscription.startDate
+        );
 
-      const differenceInMilliseconds =
-        endDate.getTime() - now.getTime();
+        const endDate = new Date(
+          subscription.endDate
+        );
 
-      const daysRemaining = Math.max(
-        0,
-        Math.ceil(
-          differenceInMilliseconds /
-            (1000 * 60 * 60 * 24)
-        )
-      );
+        const differenceInMilliseconds =
+          endDate.getTime() - now.getTime();
 
-      const isActive =
-        subscription.status === "ACTIVE" &&
-        endDate >= now;
+        const daysRemaining = Math.max(
+          0,
+          Math.ceil(
+            differenceInMilliseconds /
+              (1000 * 60 * 60 * 24)
+          )
+        );
 
-      return {
-        subscriptionId: subscription.id,
+        /*
+         * Workout plan is active when:
+         *
+         * 1. Status is ACTIVE
+         * 2. End date has not passed
+         */
+        const isActive =
+          subscription.status === "ACTIVE" &&
+          endDate >= now;
 
-        user: {
-          id: subscription.user.id,
-          fullName: subscription.user.fullName,
-          email: subscription.user.email,
-          phoneNumber: subscription.user.phoneNumber,
+        return {
+          subscriptionId:
+            subscription.id,
 
-          dateOfBirth: subscription.user.dateOfBirth,
-          weight: subscription.user.weight,
-          height: subscription.user.height,
-          gender: subscription.user.gender,
+          user: {
+            id: subscription.user.id,
 
-          bodyFat: subscription.user.bodyFat,
-          muscleMass: subscription.user.muscleMass,
-          visceralFat: subscription.user.visceralFat,
+            fullName:
+              subscription.user.fullName,
 
-          createdAt: subscription.user.createdAt,
+            email:
+              subscription.user.email,
 
-          weightHistory:
-            subscription.user.weightHistory,
-        },
+            phoneNumber:
+              subscription.user.phoneNumber,
 
-        serviceType: subscription.serviceType,
+            dateOfBirth:
+              subscription.user.dateOfBirth,
 
-        planName: subscription.planName,
-        durationDays: subscription.durationDays,
-        price: subscription.price,
+            weight:
+              subscription.user.weight,
 
-        startDate,
-        endDate,
+            height:
+              subscription.user.height,
 
-        status: isActive
-          ? "ACTIVE"
-          : "EXPIRED",
+            gender:
+              subscription.user.gender,
 
-        paymentId: subscription.paymentId,
+            bodyFat:
+              subscription.user.bodyFat,
 
-        createdAt: subscription.createdAt,
+            muscleMass:
+              subscription.user.muscleMass,
 
-        daysRemaining,
-      };
-    });
+            visceralFat:
+              subscription.user.visceralFat,
 
-    return NextResponse.json({
-      workoutUsers,
-    });
+            createdAt:
+              subscription.user.createdAt,
+
+            weightHistory:
+              subscription.user.weightHistory,
+          },
+
+          serviceType:
+            subscription.serviceType,
+
+          planName:
+            subscription.planName,
+
+          durationDays:
+            subscription.durationDays,
+
+          price:
+            subscription.price,
+
+          startDate,
+          endDate,
+
+          status: isActive
+            ? "ACTIVE"
+            : "EXPIRED",
+
+          paymentId:
+            subscription.paymentId,
+
+          createdAt:
+            subscription.createdAt,
+
+          daysRemaining,
+        };
+      });
+
+    return NextResponse.json(
+      {
+        workoutUsers,
+      },
+      {
+        status: 200,
+      }
+    );
   } catch (error) {
     console.error(
       "Workout users API error:",
@@ -172,7 +227,8 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        error: "Failed to fetch workout users",
+        error:
+          "Failed to fetch workout users",
       },
       {
         status: 500,

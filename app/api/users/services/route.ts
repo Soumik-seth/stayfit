@@ -80,6 +80,24 @@ export async function GET() {
 
     const activeSubscriptions =
       subscriptions.filter((subscription) => {
+        // -----------------------------------------
+        // Consultation plans are session-based.
+        // Their endDate should NOT determine
+        // whether the subscription is active.
+        // -----------------------------------------
+
+        if (
+          subscription.serviceType ===
+          "CONSULTATION"
+        ) {
+          return subscription.status === "ACTIVE";
+        }
+
+        // -----------------------------------------
+        // Diet / Workout / Diet + Workout plans
+        // are time-based.
+        // -----------------------------------------
+
         const endDate = new Date(
           subscription.endDate
         );
@@ -106,10 +124,12 @@ export async function GET() {
         subscription.serviceType === "DIET_WORKOUT"
     );
 
-    const hasConsultation = activeSubscriptions.some(
-      (subscription) =>
-        subscription.serviceType === "CONSULTATION"
-    );
+    const hasConsultation =
+      activeSubscriptions.some(
+        (subscription) =>
+          subscription.serviceType ===
+          "CONSULTATION"
+      );
 
     // -----------------------------------------
     // Direct Diet + Workout subscription
@@ -118,7 +138,8 @@ export async function GET() {
     const hasDietWorkoutPlan =
       activeSubscriptions.some(
         (subscription) =>
-          subscription.serviceType === "DIET_WORKOUT"
+          subscription.serviceType ===
+          "DIET_WORKOUT"
       );
 
     // -----------------------------------------

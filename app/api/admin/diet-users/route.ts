@@ -8,7 +8,9 @@ const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
 });
 
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient({
+  adapter,
+});
 
 async function checkAdmin() {
   const cookieStore = await cookies();
@@ -43,131 +45,166 @@ export async function GET() {
       );
     }
 
-    const subscriptions = await prisma.subscription.findMany({
-      where: {
-        serviceType: "DIET",
-      },
+    /*
+     * Only DIET subscriptions will be shown
+     */
+    const subscriptions =
+      await prisma.subscription.findMany({
+        where: {
+          serviceType: "DIET",
+        },
 
-      orderBy: {
-        createdAt: "desc",
-      },
+        orderBy: {
+          createdAt: "desc",
+        },
 
-      select: {
-        id: true,
-        serviceType: true,
-        planName: true,
-        durationDays: true,
-        price: true,
-        startDate: true,
-        endDate: true,
-        status: true,
-        paymentId: true,
-        createdAt: true,
+        select: {
+          id: true,
+          serviceType: true,
+          planName: true,
+          durationDays: true,
+          price: true,
+          startDate: true,
+          endDate: true,
+          status: true,
+          paymentId: true,
+          createdAt: true,
 
-        user: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-            phoneNumber: true,
-            dateOfBirth: true,
-            weight: true,
-            height: true,
-            gender: true,
-            bodyFat: true,
-            muscleMass: true,
-            visceralFat: true,
-            createdAt: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phoneNumber: true,
 
-            weightHistory: {
-              orderBy: {
-                createdAt: "desc",
-              },
+              dateOfBirth: true,
+              weight: true,
+              height: true,
+              gender: true,
 
-              select: {
-                id: true,
-                weight: true,
-                createdAt: true,
+              bodyFat: true,
+              muscleMass: true,
+              visceralFat: true,
+
+              createdAt: true,
+
+              weightHistory: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+
+                select: {
+                  id: true,
+                  weight: true,
+                  createdAt: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
 
     const now = new Date();
 
-    const dietUsers = subscriptions.map((subscription) => {
-      const startDate = new Date(subscription.startDate);
-      const endDate = new Date(subscription.endDate);
+    const dietUsers = subscriptions.map(
+      (subscription) => {
+        const startDate = new Date(
+          subscription.startDate
+        );
 
-      const differenceInMilliseconds =
-        endDate.getTime() - now.getTime();
+        const endDate = new Date(
+          subscription.endDate
+        );
 
-      const daysRemaining = Math.max(
-        0,
-        Math.ceil(
-          differenceInMilliseconds /
-            (1000 * 60 * 60 * 24)
-        )
-      );
+        const differenceInMilliseconds =
+          endDate.getTime() - now.getTime();
 
-      const isActive =
-        subscription.status === "ACTIVE" &&
-        endDate >= now;
-
-      return {
-        subscriptionId: subscription.id,
+        const daysRemaining = Math.max(
+          0,
+          Math.ceil(
+            differenceInMilliseconds /
+              (1000 * 60 * 60 * 24)
+          )
+        );
 
         /*
-         * IMPORTANT:
-         * Frontend expects user data inside item.user
+         * A diet plan is active only when:
+         * 1. Database status is ACTIVE
+         * 2. End date has not passed
          */
-        user: {
-          id: subscription.user.id,
-          fullName: subscription.user.fullName,
-          email: subscription.user.email,
-          phoneNumber: subscription.user.phoneNumber,
+        const isActive =
+          subscription.status === "ACTIVE" &&
+          endDate >= now;
 
-          dateOfBirth: subscription.user.dateOfBirth,
-          weight: subscription.user.weight,
-          height: subscription.user.height,
-          gender: subscription.user.gender,
+        return {
+          subscriptionId: subscription.id,
 
-          bodyFat: subscription.user.bodyFat,
-          muscleMass: subscription.user.muscleMass,
-          visceralFat: subscription.user.visceralFat,
+          user: {
+            id: subscription.user.id,
+            fullName:
+              subscription.user.fullName,
+            email: subscription.user.email,
+            phoneNumber:
+              subscription.user.phoneNumber,
 
-          createdAt: subscription.user.createdAt,
+            dateOfBirth:
+              subscription.user.dateOfBirth,
+            weight: subscription.user.weight,
+            height: subscription.user.height,
+            gender: subscription.user.gender,
 
-          weightHistory:
-            subscription.user.weightHistory,
-        },
+            bodyFat:
+              subscription.user.bodyFat,
+            muscleMass:
+              subscription.user.muscleMass,
+            visceralFat:
+              subscription.user.visceralFat,
 
-        serviceType: subscription.serviceType,
+            createdAt:
+              subscription.user.createdAt,
 
-        planName: subscription.planName,
-        durationDays: subscription.durationDays,
-        price: subscription.price,
+            weightHistory:
+              subscription.user.weightHistory,
+          },
 
-        startDate,
-        endDate,
+          serviceType:
+            subscription.serviceType,
 
-        status: isActive
-          ? "ACTIVE"
-          : "EXPIRED",
+          planName:
+            subscription.planName,
 
-        paymentId: subscription.paymentId,
+          durationDays:
+            subscription.durationDays,
 
-        createdAt: subscription.createdAt,
+          price:
+            subscription.price,
 
-        daysRemaining,
-      };
-    });
+          startDate,
+          endDate,
 
-    return NextResponse.json({
-      dietUsers,
-    });
+          status: isActive
+            ? "ACTIVE"
+            : "EXPIRED",
+
+          paymentId:
+            subscription.paymentId,
+
+          createdAt:
+            subscription.createdAt,
+
+          daysRemaining,
+        };
+      }
+    );
+
+    return NextResponse.json(
+      {
+        dietUsers,
+      },
+      {
+        status: 200,
+      }
+    );
   } catch (error) {
     console.error(
       "Diet users API error:",
@@ -176,7 +213,8 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        error: "Failed to fetch diet users",
+        error:
+          "Failed to fetch diet users",
       },
       {
         status: 500,

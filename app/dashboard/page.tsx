@@ -53,7 +53,8 @@ export default function DashboardPage() {
     useState<ServiceData | null>(null);
 
   const [loading, setLoading] = useState(true);
-  const [serviceLoading, setServiceLoading] = useState(true);
+  const [serviceLoading, setServiceLoading] =
+    useState(true);
 
   // --------------------------------------------------
   // GET USER
@@ -99,12 +100,17 @@ export default function DashboardPage() {
       try {
         setServiceLoading(true);
 
-        const response = await fetch("/api/users/services", {
-          cache: "no-store",
-        });
+        const response = await fetch(
+          "/api/users/services",
+          {
+            cache: "no-store",
+          }
+        );
 
         if (!response.ok) {
-          console.error("Failed to load user services");
+          console.error(
+            "Failed to load user services"
+          );
           return;
         }
 
@@ -112,7 +118,10 @@ export default function DashboardPage() {
 
         setServiceData(data);
       } catch (error) {
-        console.error("Service loading error:", error);
+        console.error(
+          "Service loading error:",
+          error
+        );
       } finally {
         setServiceLoading(false);
       }
@@ -203,16 +212,30 @@ export default function DashboardPage() {
   // --------------------------------------------------
 
   const activeSubscriptions =
-    serviceData?.subscriptions?.filter(
-      (subscription) =>
+    serviceData?.subscriptions?.filter((subscription) => {
+      // Consultation plans are session-based.
+      // Therefore endDate should not determine
+      // whether a consultation plan is active.
+      if (
+        subscription.serviceType ===
+        "CONSULTATION"
+      ) {
+        return subscription.status === "ACTIVE";
+      }
+
+      // Diet / Workout / Diet + Workout plans
+      // are time-based.
+      return (
         subscription.status === "ACTIVE" &&
         new Date(subscription.endDate) >= new Date()
-    ) ?? [];
+      );
+    }) ?? [];
 
   /*
    * If user has multiple active subscriptions,
    * choose the one that ends latest.
    */
+
   const activeSubscription =
     activeSubscriptions.length > 0
       ? [...activeSubscriptions].sort(
@@ -229,10 +252,18 @@ export default function DashboardPage() {
   const getPlanProgress = () => {
     if (!activeSubscription) {
       return {
+        isConsultation: false,
+
         currentDay: 0,
         totalDays: 0,
         remainingDays: 0,
+
+        currentSession: 0,
+        totalSessions: 0,
+        remainingSessions: 0,
+
         progress: 0,
+
         startDate: null as Date | null,
         endDate: null as Date | null,
       };
@@ -247,6 +278,65 @@ export default function DashboardPage() {
     );
 
     const now = new Date();
+
+    // ------------------------------------------------
+    // VIDEO CONSULTATION
+    // ------------------------------------------------
+
+    if (
+      activeSubscription.serviceType ===
+      "CONSULTATION"
+    ) {
+      const totalSessions = Math.max(
+        1,
+        activeSubscription.durationDays
+      );
+
+      /*
+       * Consultation plans are session based.
+       *
+       * 1 Session  -> durationDays = 1
+       * 3 Sessions -> durationDays = 3
+       * 6 Sessions -> durationDays = 6
+       * 12 Sessions -> durationDays = 12
+       *
+       * Current session will later be connected
+       * with actual completed consultation data.
+       */
+
+      const currentSession = 1;
+
+      const remainingSessions = Math.max(
+        0,
+        totalSessions - currentSession
+      );
+
+      const progress =
+        totalSessions > 0
+          ? (currentSession / totalSessions) * 100
+          : 0;
+
+      return {
+        isConsultation: true,
+
+        currentDay: 0,
+        totalDays: 0,
+        remainingDays: 0,
+
+        currentSession,
+        totalSessions,
+        remainingSessions,
+
+        progress,
+
+        startDate: start,
+        endDate: end,
+      };
+    }
+
+    // ------------------------------------------------
+    // DIET / WORKOUT / DIET + WORKOUT
+    // ------------------------------------------------
 
     const totalMs =
       end.getTime() - start.getTime();
@@ -288,10 +378,18 @@ export default function DashboardPage() {
         : 100;
 
     return {
+      isConsultation: false,
+
       currentDay,
       totalDays,
       remainingDays,
+
+      currentSession: 0,
+      totalSessions: 0,
+      remainingSessions: 0,
+
       progress,
+
       startDate: start,
       endDate: end,
     };
@@ -352,10 +450,7 @@ export default function DashboardPage() {
       ===================================================== */}
 
       <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur">
-
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 md:px-8 md:py-4">
-
-          {/* Logo */}
 
           <div>
             <h1 className="text-xl font-extrabold tracking-tight text-[#0C4372] sm:text-2xl">
@@ -367,12 +462,9 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* User */}
-
           <div className="flex items-center gap-2 sm:gap-4">
 
             <div className="hidden text-right sm:block">
-
               <p className="text-sm font-semibold text-gray-700">
                 {user.fullName}
               </p>
@@ -380,7 +472,6 @@ export default function DashboardPage() {
               <p className="text-xs text-gray-400">
                 {getServiceLabel()}
               </p>
-
             </div>
 
             <button
@@ -391,9 +482,7 @@ export default function DashboardPage() {
             </button>
 
           </div>
-
         </div>
-
       </header>
 
       {/* =====================================================
@@ -415,7 +504,6 @@ export default function DashboardPage() {
           <div className="mt-1 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
 
             <div>
-
               <h2 className="text-2xl font-extrabold leading-tight text-[#0C4372] sm:text-3xl md:text-4xl">
                 Hello, {user.fullName} 👋
               </h2>
@@ -424,19 +512,15 @@ export default function DashboardPage() {
                 Track your diet, workout and health
                 progress from one place.
               </p>
-
             </div>
 
             <div className="w-fit rounded-full bg-[#CAA035]/10 px-4 py-2">
-
               <span className="text-xs font-bold text-[#9A7620] sm:text-sm">
                 {getServiceLabel()}
               </span>
-
             </div>
 
           </div>
-
         </div>
 
         {/* =================================================
@@ -447,12 +531,8 @@ export default function DashboardPage() {
           <div className="mb-7 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
 
             {/* Diet */}
-
             <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-
-              <p className="text-2xl">
-                🥗
-              </p>
+              <p className="text-2xl">🥗</p>
 
               <p className="mt-2 text-xs text-gray-400">
                 Diet
@@ -463,16 +543,11 @@ export default function DashboardPage() {
                   ? "Active"
                   : "Not Active"}
               </p>
-
             </div>
 
             {/* Workout */}
-
             <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-
-              <p className="text-2xl">
-                🏋️
-              </p>
+              <p className="text-2xl">🏋️</p>
 
               <p className="mt-2 text-xs text-gray-400">
                 Workout
@@ -483,16 +558,11 @@ export default function DashboardPage() {
                   ? "Active"
                   : "Not Active"}
               </p>
-
             </div>
 
             {/* Consultation */}
-
             <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-
-              <p className="text-2xl">
-                📹
-              </p>
+              <p className="text-2xl">📹</p>
 
               <p className="mt-2 text-xs text-gray-400">
                 Consultation
@@ -503,16 +573,11 @@ export default function DashboardPage() {
                   ? "Available"
                   : "Unavailable"}
               </p>
-
             </div>
 
             {/* Tracking */}
-
             <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-
-              <p className="text-2xl">
-                ⚖️
-              </p>
+              <p className="text-2xl">⚖️</p>
 
               <p className="mt-2 text-xs text-gray-400">
                 Tracking
@@ -521,7 +586,6 @@ export default function DashboardPage() {
               <p className="mt-1 text-sm font-bold text-[#0C4372]">
                 Daily
               </p>
-
             </div>
 
           </div>
@@ -551,8 +615,6 @@ export default function DashboardPage() {
             {activeSubscription && (
               <div className="mb-7 overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
 
-                {/* Plan Header */}
-
                 <div className="bg-[#0C4372] p-5 text-white sm:p-7">
 
                   <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
@@ -572,12 +634,12 @@ export default function DashboardPage() {
                         "DIET_WORKOUT"
                           ? "Diet + Workout Plan"
                           : activeSubscription.serviceType ===
-                            "DIET"
-                          ? "Diet Plan"
-                          : activeSubscription.serviceType ===
-                            "WORKOUT"
-                          ? "Workout Plan"
-                          : "Video Consultation Plan"}
+                              "DIET"
+                            ? "Diet Plan"
+                            : activeSubscription.serviceType ===
+                                "WORKOUT"
+                              ? "Workout Plan"
+                              : "Video Consultation Plan"}
                       </p>
 
                     </div>
@@ -590,32 +652,34 @@ export default function DashboardPage() {
 
                 </div>
 
-                {/* Plan Details */}
-
                 <div className="p-5 sm:p-7">
 
                   <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
 
-                    {/* Current Day */}
-
+                    {/* Current Day / Current Session */}
                     <div className="rounded-2xl bg-[#F7F9F8] p-4">
 
                       <p className="text-xs text-gray-400">
-                        Current Day
+                        {planProgress.isConsultation
+                          ? "Current Session"
+                          : "Current Day"}
                       </p>
 
                       <p className="mt-1 text-2xl font-extrabold text-[#0C4372]">
-                        Day {planProgress.currentDay}
+                        {planProgress.isConsultation
+                          ? `Session ${planProgress.currentSession}`
+                          : `Day ${planProgress.currentDay}`}
                       </p>
 
                       <p className="mt-1 text-xs text-gray-400">
-                        of {planProgress.totalDays} days
+                        {planProgress.isConsultation
+                          ? `of ${planProgress.totalSessions} sessions`
+                          : `of ${planProgress.totalDays} days`}
                       </p>
 
                     </div>
 
                     {/* Remaining */}
-
                     <div className="rounded-2xl bg-[#F7F9F8] p-4">
 
                       <p className="text-xs text-gray-400">
@@ -623,17 +687,20 @@ export default function DashboardPage() {
                       </p>
 
                       <p className="mt-1 text-2xl font-extrabold text-[#0C4372]">
-                        {planProgress.remainingDays}
+                        {planProgress.isConsultation
+                          ? planProgress.remainingSessions
+                          : planProgress.remainingDays}
                       </p>
 
                       <p className="mt-1 text-xs text-gray-400">
-                        days left
+                        {planProgress.isConsultation
+                          ? "sessions left"
+                          : "days left"}
                       </p>
 
                     </div>
 
                     {/* Started */}
-
                     <div className="rounded-2xl bg-[#F7F9F8] p-4">
 
                       <p className="text-xs text-gray-400">
@@ -649,7 +716,6 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Ends */}
-
                     <div className="rounded-2xl bg-[#F7F9F8] p-4">
 
                       <p className="text-xs text-gray-400">
@@ -657,9 +723,11 @@ export default function DashboardPage() {
                       </p>
 
                       <p className="mt-2 text-sm font-bold text-gray-700">
-                        {formatDate(
-                          planProgress.endDate
-                        )}
+                        {planProgress.isConsultation
+                          ? "Not scheduled"
+                          : formatDate(
+                              planProgress.endDate
+                            )}
                       </p>
 
                     </div>
@@ -667,7 +735,6 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Progress Bar */}
-
                   <div className="mt-6">
 
                     <div className="mb-2 flex items-center justify-between">
@@ -699,7 +766,6 @@ export default function DashboardPage() {
                   </div>
 
                 </div>
-
               </div>
             )}
 
@@ -761,7 +827,6 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
                 {/* DIET */}
-
                 {isDiet && (
                   <div className="group rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:p-6">
 
@@ -806,7 +871,6 @@ export default function DashboardPage() {
                 )}
 
                 {/* WORKOUT */}
-
                 {isWorkout && (
                   <div className="group rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:p-6">
 
@@ -836,22 +900,18 @@ export default function DashboardPage() {
                       progress.
                     </p>
 
-                    <button
-                      onClick={() =>
-                        router.push(
-                          "/dashboard/workout"
-                        )
-                      }
-                      className="mt-5 w-full rounded-xl bg-[#0C4372] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#09385F]"
-                    >
-                      Open Workout Plan
-                    </button>
+                  <button
+  type="button"
+  onClick={() => router.push("/dashboard/workout")}
+  className="mt-5 w-full rounded-xl bg-[#0C4372] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#09385F]"
+>
+  Open Workout Plan
+</button>
 
                   </div>
                 )}
 
                 {/* VIDEO CONSULTATION */}
-
                 {canRequestVideo && (
                   <div className="group rounded-3xl border border-[#CAA035]/20 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:p-6">
 
@@ -896,7 +956,6 @@ export default function DashboardPage() {
                 )}
 
               </div>
-
             </div>
 
             {/* =================================================
@@ -921,7 +980,6 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
                 {/* WEIGHT */}
-
                 <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
 
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-2xl">
@@ -951,7 +1009,6 @@ export default function DashboardPage() {
                 </div>
 
                 {/* MEAL */}
-
                 {isDiet && (
                   <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
 
@@ -983,7 +1040,6 @@ export default function DashboardPage() {
                 )}
 
                 {/* WORKOUT */}
-
                 {isWorkout && (
                   <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
 
@@ -1000,22 +1056,18 @@ export default function DashboardPage() {
                       your workout progress images.
                     </p>
 
-                    <button
-                      onClick={() =>
-                        router.push(
-                          "/dashboard/workout"
-                        )
-                      }
-                      className="mt-5 w-full rounded-xl border border-[#0C4372] px-4 py-3 text-sm font-bold text-[#0C4372] transition hover:bg-[#0C4372] hover:text-white"
-                    >
-                      Log Today's Workout
-                    </button>
+                 <button
+  type="button"
+  onClick={() => router.push("/dashboard/workout-images")}
+  className="mt-5 w-full rounded-xl border border-[#0C4372] px-4 py-3 text-sm font-bold text-[#0C4372] transition hover:bg-[#0C4372] hover:text-white"
+>
+  Log Today's Workout
+</button>
 
                   </div>
                 )}
 
               </div>
-
             </div>
 
             {/* =================================================
@@ -1151,8 +1203,6 @@ export default function DashboardPage() {
 
               <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
 
-                {/* Full Name */}
-
                 <div className="rounded-2xl bg-[#F7F9F8] p-4">
 
                   <p className="text-xs text-gray-400">
@@ -1165,8 +1215,6 @@ export default function DashboardPage() {
 
                 </div>
 
-                {/* Email */}
-
                 <div className="rounded-2xl bg-[#F7F9F8] p-4">
 
                   <p className="text-xs text-gray-400">
@@ -1178,8 +1226,6 @@ export default function DashboardPage() {
                   </p>
 
                 </div>
-
-                {/* Account Type */}
 
                 <div className="rounded-2xl bg-[#F7F9F8] p-4 sm:col-span-2">
 
@@ -1211,7 +1257,6 @@ export default function DashboardPage() {
         <div className="mx-auto grid max-w-md grid-cols-4">
 
           {/* Home */}
-
           <button
             onClick={() =>
               window.scrollTo({
@@ -1221,7 +1266,6 @@ export default function DashboardPage() {
             }
             className="flex flex-col items-center gap-1 rounded-xl py-2 text-[#0C4372]"
           >
-
             <span className="text-lg">
               🏠
             </span>
@@ -1229,11 +1273,9 @@ export default function DashboardPage() {
             <span className="text-[10px] font-semibold">
               Home
             </span>
-
           </button>
 
           {/* Progress */}
-
           <button
             onClick={() =>
               router.push(
@@ -1242,7 +1284,6 @@ export default function DashboardPage() {
             }
             className="flex flex-col items-center gap-1 rounded-xl py-2 text-gray-400"
           >
-
             <span className="text-lg">
               📊
             </span>
@@ -1250,11 +1291,9 @@ export default function DashboardPage() {
             <span className="text-[10px] font-semibold">
               Progress
             </span>
-
           </button>
 
           {/* Calculators */}
-
           <button
             onClick={() =>
               router.push(
@@ -1263,7 +1302,6 @@ export default function DashboardPage() {
             }
             className="flex flex-col items-center gap-1 rounded-xl py-2 text-gray-400"
           >
-
             <span className="text-lg">
               🧮
             </span>
@@ -1271,11 +1309,9 @@ export default function DashboardPage() {
             <span className="text-[10px] font-semibold">
               Tools
             </span>
-
           </button>
 
           {/* Profile */}
-
           <button
             onClick={() =>
               document
@@ -1286,7 +1322,6 @@ export default function DashboardPage() {
             }
             className="flex flex-col items-center gap-1 rounded-xl py-2 text-gray-400"
           >
-
             <span className="text-lg">
               👤
             </span>
@@ -1294,11 +1329,9 @@ export default function DashboardPage() {
             <span className="text-[10px] font-semibold">
               Profile
             </span>
-
           </button>
 
         </div>
-
       </nav>
 
     </main>

@@ -7,7 +7,6 @@ import {
   Search,
   RefreshCw,
   X,
-  CalendarDays,
   CreditCard,
   Utensils,
   Dumbbell,
@@ -39,59 +38,47 @@ type Subscription = {
 };
 
 export default function ActiveSubscriptionsPage() {
-  const [subscriptions, setSubscriptions] = useState<
-    Subscription[]
-  >([]);
-
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-
-  const [serviceFilter, setServiceFilter] =
-    useState<"ALL" | ServiceType>("ALL");
-
-  const [showDetails, setShowDetails] =
-    useState<Subscription | null>(null);
+  const [serviceFilter, setServiceFilter] = useState<"ALL" | ServiceType>("ALL");
+  const [showDetails, setShowDetails] = useState<Subscription | null>(null);
 
   const fetchSubscriptions = async () => {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        "/api/admin/subscriptions",
-        {
-          cache: "no-store",
-        }
-      );
+      const response = await fetch("/api/admin/subscriptions", {
+        cache: "no-store",
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        alert(
-          data.message ||
-            "Failed to load subscriptions."
-        );
+        alert(data.message || "Failed to load subscriptions.");
         return;
       }
 
       const now = new Date();
 
-      const active = (
-        data.subscriptions || []
-      ).filter((item: Subscription) => {
-        const endDate = new Date(
-          item.endDate
-        );
+      // Consultation: status ACTIVE thaklei active dekhabe.
+      // Diet/Workout: status ebong endDate duটোই check hobe.
+      const active = (data.subscriptions || []).filter(
+        (item: Subscription) => {
+          if (item.serviceType === "CONSULTATION") {
+            return item.status === "ACTIVE";
+          }
 
-        return (
-          item.status === "ACTIVE" &&
-          endDate >= now
-        );
-      });
+          const endDate = new Date(item.endDate);
+
+          return item.status === "ACTIVE" && endDate >= now;
+        }
+      );
 
       setSubscriptions(active);
     } catch (error) {
-      console.error(error);
-      alert("Something went wrong.");
+      console.error("Fetch subscriptions error:", error);
+      alert("Something went wrong while loading subscriptions.");
     } finally {
       setLoading(false);
     }
@@ -102,88 +89,60 @@ export default function ActiveSubscriptionsPage() {
   }, []);
 
   const filteredSubscriptions = useMemo(() => {
-    const value = search
-      .toLowerCase()
-      .trim();
+    const value = search.toLowerCase().trim();
 
-    return subscriptions.filter(
-      (subscription) => {
-        const matchesSearch =
-          !value ||
-          subscription.user.fullName
-            .toLowerCase()
-            .includes(value) ||
-          subscription.user.email
-            .toLowerCase()
-            .includes(value) ||
-          subscription.planName
-            .toLowerCase()
-            .includes(value) ||
-          subscription.serviceType
-            .toLowerCase()
-            .includes(value);
+    return subscriptions.filter((subscription) => {
+      const matchesSearch =
+        !value ||
+        subscription.user.fullName.toLowerCase().includes(value) ||
+        subscription.user.email.toLowerCase().includes(value) ||
+        subscription.planName.toLowerCase().includes(value) ||
+        subscription.serviceType.toLowerCase().includes(value);
 
-        const matchesService =
-          serviceFilter === "ALL" ||
-          subscription.serviceType ===
-            serviceFilter;
+      const matchesService =
+        serviceFilter === "ALL" ||
+        subscription.serviceType === serviceFilter;
 
-        return (
-          matchesSearch &&
-          matchesService
-        );
-      }
-    );
-  }, [
-    subscriptions,
-    search,
-    serviceFilter,
-  ]);
+      return matchesSearch && matchesService;
+    });
+  }, [subscriptions, search, serviceFilter]);
 
   const dietCount = subscriptions.filter(
-    (item) =>
-      item.serviceType === "DIET"
+    (item) => item.serviceType === "DIET"
   ).length;
 
   const workoutCount = subscriptions.filter(
-    (item) =>
-      item.serviceType === "WORKOUT"
+    (item) => item.serviceType === "WORKOUT"
   ).length;
 
-  const consultationCount =
-    subscriptions.filter(
-      (item) =>
-        item.serviceType ===
-        "CONSULTATION"
-    ).length;
+  const consultationCount = subscriptions.filter(
+    (item) => item.serviceType === "CONSULTATION"
+  ).length;
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString(
-      "en-IN",
-      {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }
-    );
+    return new Date(date).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
   };
 
-  const getDaysRemaining = (
-    endDate: string
-  ) => {
-    const now = new Date();
-    const end = new Date(endDate);
-
+  const getDaysRemaining = (endDate: string) => {
     const difference =
-      end.getTime() - now.getTime();
+      new Date(endDate).getTime() - new Date().getTime();
 
     return Math.max(
       0,
-      Math.ceil(
-        difference /
-          (1000 * 60 * 60 * 24)
-      )
+      Math.ceil(difference / (1000 * 60 * 60 * 24))
     );
+  };
+
+  const getRemainingLabel = (item: Subscription) => {
+    if (item.serviceType === "CONSULTATION") {
+      return "Session-based";
+    }
+
+    return `${getDaysRemaining(item.endDate)} days`;
   };
 
   return (
@@ -216,15 +175,13 @@ export default function ActiveSubscriptionsPage() {
         >
           <RefreshCw
             size={17}
-            className={
-              loading ? "animate-spin" : ""
-            }
+            className={loading ? "animate-spin" : ""}
           />
           Refresh
         </button>
       </div>
 
-      {/* Stats */}
+      {/* Statistics */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Active"
@@ -251,7 +208,7 @@ export default function ActiveSubscriptionsPage() {
         />
       </div>
 
-      {/* Search + Filter */}
+      {/* Search and Filter */}
       <div className="mb-6 rounded-xl bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
           <div className="relative flex-1">
@@ -264,9 +221,7 @@ export default function ActiveSubscriptionsPage() {
               type="text"
               placeholder="Search user, email, plan or service..."
               value={search}
-              onChange={(e) =>
-                setSearch(e.target.value)
-              }
+              onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-lg border border-gray-200 py-3 pl-10 pr-4 text-sm outline-none focus:border-[#0C4372]"
             />
           </div>
@@ -274,34 +229,19 @@ export default function ActiveSubscriptionsPage() {
           <select
             value={serviceFilter}
             onChange={(e) =>
-              setServiceFilter(
-                e.target.value as
-                  | "ALL"
-                  | ServiceType
-              )
+              setServiceFilter(e.target.value as "ALL" | ServiceType)
             }
             className="rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#0C4372]"
           >
-            <option value="ALL">
-              All Services
-            </option>
-
-            <option value="DIET">
-              Diet Plans
-            </option>
-
-            <option value="WORKOUT">
-              Workout Plans
-            </option>
-
-            <option value="CONSULTATION">
-              Video Consultations
-            </option>
+            <option value="ALL">All Services</option>
+            <option value="DIET">Diet Plans</option>
+            <option value="WORKOUT">Workout Plans</option>
+            <option value="CONSULTATION">Video Consultations</option>
           </select>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Subscription List */}
       {loading ? (
         <div className="rounded-xl bg-white p-10 text-center shadow-sm">
           <RefreshCw
@@ -313,8 +253,7 @@ export default function ActiveSubscriptionsPage() {
             Loading active subscriptions...
           </p>
         </div>
-      ) : filteredSubscriptions.length ===
-        0 ? (
+      ) : filteredSubscriptions.length === 0 ? (
         <div className="rounded-xl bg-white p-10 text-center shadow-sm">
           <CreditCard
             size={40}
@@ -331,210 +270,134 @@ export default function ActiveSubscriptionsPage() {
         </div>
       ) : (
         <>
-          {/* Desktop */}
+          {/* Desktop Table */}
           <div className="hidden overflow-hidden rounded-xl bg-white shadow-sm lg:block">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1200px]">
                 <thead className="bg-[#0C4372] text-left text-sm text-white">
                   <tr>
-                    <th className="px-5 py-4">
-                      User
-                    </th>
-
-                    <th className="px-5 py-4">
-                      Service
-                    </th>
-
-                    <th className="px-5 py-4">
-                      Plan
-                    </th>
-
-                    <th className="px-5 py-4">
-                      Price
-                    </th>
-
-                    <th className="px-5 py-4">
-                      End Date
-                    </th>
-
-                    <th className="px-5 py-4">
-                      Days Left
-                    </th>
-
-                    <th className="px-5 py-4">
-                      Status
-                    </th>
-
-                    <th className="px-5 py-4">
-                      Details
-                    </th>
+                    <th className="px-5 py-4">User</th>
+                    <th className="px-5 py-4">Service</th>
+                    <th className="px-5 py-4">Plan</th>
+                    <th className="px-5 py-4">Price</th>
+                    <th className="px-5 py-4">End Date</th>
+                    <th className="px-5 py-4">Days Left</th>
+                    <th className="px-5 py-4">Status</th>
+                    <th className="px-5 py-4">Details</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {filteredSubscriptions.map(
-                    (item) => (
-                      <tr
-                        key={item.id}
-                        className="border-b border-gray-100 hover:bg-gray-50"
-                      >
-                        <td className="px-5 py-4">
-                          <p className="font-semibold text-gray-800">
-                            {item.user.fullName}
-                          </p>
+                  {filteredSubscriptions.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="border-b border-gray-100 hover:bg-gray-50"
+                    >
+                      <td className="px-5 py-4">
+                        <p className="font-medium text-gray-800">
+                          {item.user.fullName}
+                        </p>
+                        <p className="mt-1 text-xs text-gray-500">
+                          {item.user.email}
+                        </p>
+                      </td>
 
-                          <p className="text-xs text-gray-500">
-                            {item.user.email}
-                          </p>
+                      <td className="px-5 py-4">
+                        <ServiceBadge serviceType={item.serviceType} />
+                      </td>
 
-                          {item.user
-                            .phoneNumber && (
-                            <p className="mt-1 text-xs text-gray-400">
-                              {
-                                item.user
-                                  .phoneNumber
-                              }
-                            </p>
-                          )}
-                        </td>
+                      <td className="px-5 py-4 text-sm text-gray-700">
+                        {item.planName}
+                      </td>
 
-                        <td className="px-5 py-4">
-                          <ServiceBadge
-                            serviceType={
-                              item.serviceType
-                            }
-                          />
-                        </td>
+                      <td className="px-5 py-4 text-sm font-semibold text-gray-800">
+                        ₹{item.price}
+                      </td>
 
-                        <td className="px-5 py-4">
-                          <p className="font-medium text-[#0C4372]">
-                            {item.planName}
-                          </p>
+                      <td className="px-5 py-4 text-sm text-gray-600">
+                        {formatDate(item.endDate)}
+                      </td>
 
-                          <p className="text-xs text-gray-500">
-                            {item.durationDays} days
-                          </p>
-                        </td>
+                      <td className="px-5 py-4 text-sm text-gray-600">
+                        {getRemainingLabel(item)}
+                      </td>
 
-                        <td className="px-5 py-4 font-medium">
-                          ₹{item.price}
-                        </td>
+                      <td className="px-5 py-4">
+                        <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                          Active
+                        </span>
+                      </td>
 
-                        <td className="px-5 py-4 text-sm text-gray-600">
-                          {formatDate(
-                            item.endDate
-                          )}
-                        </td>
-
-                        <td className="px-5 py-4">
-                          <span className="font-semibold text-green-600">
-                            {getDaysRemaining(
-                              item.endDate
-                            )}{" "}
-                            days
-                          </span>
-                        </td>
-
-                        <td className="px-5 py-4">
-                          <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                            Active
-                          </span>
-                        </td>
-
-                        <td className="px-5 py-4">
-                          <button
-                            onClick={() =>
-                              setShowDetails(item)
-                            }
-                            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-[#0C4372] hover:bg-gray-50"
-                          >
-                            <Eye size={15} />
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  )}
+                      <td className="px-5 py-4">
+                        <button
+                          onClick={() => setShowDetails(item)}
+                          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-[#0C4372] hover:bg-gray-50"
+                        >
+                          <Eye size={15} />
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Mobile */}
+          {/* Mobile Cards */}
           <div className="grid gap-4 lg:hidden">
-            {filteredSubscriptions.map(
-              (item) => (
-                <div
-                  key={item.id}
-                  className="rounded-xl bg-white p-5 shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-semibold text-gray-800">
-                        {item.user.fullName}
-                      </h3>
+            {filteredSubscriptions.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-xl bg-white p-5 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-semibold text-gray-800">
+                      {item.user.fullName}
+                    </h3>
 
-                      <p className="mt-1 text-xs text-gray-500">
-                        {item.user.email}
-                      </p>
-                    </div>
-
-                    <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                      Active
-                    </span>
+                    <p className="mt-1 text-xs text-gray-500">
+                      {item.user.email}
+                    </p>
                   </div>
 
-                  <div className="mt-4">
-                    <ServiceBadge
-                      serviceType={
-                        item.serviceType
-                      }
-                    />
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <InfoItem
-                      label="Plan"
-                      value={item.planName}
-                    />
-
-                    <InfoItem
-                      label="Price"
-                      value={`₹${item.price}`}
-                    />
-
-                    <InfoItem
-                      label="End Date"
-                      value={formatDate(
-                        item.endDate
-                      )}
-                    />
-
-                    <InfoItem
-                      label="Days Left"
-                      value={`${getDaysRemaining(
-                        item.endDate
-                      )} days`}
-                    />
-                  </div>
-
-                  <button
-                    onClick={() =>
-                      setShowDetails(item)
-                    }
-                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 py-2.5 text-sm font-medium text-[#0C4372] hover:bg-gray-50"
-                  >
-                    <Eye size={16} />
-                    View Details
-                  </button>
+                  <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                    Active
+                  </span>
                 </div>
-              )
-            )}
+
+                <div className="mt-4">
+                  <ServiceBadge serviceType={item.serviceType} />
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <InfoItem label="Plan" value={item.planName} />
+                  <InfoItem label="Price" value={`₹${item.price}`} />
+                  <InfoItem
+                    label="End Date"
+                    value={formatDate(item.endDate)}
+                  />
+                  <InfoItem
+                    label="Days Left"
+                    value={getRemainingLabel(item)}
+                  />
+                </div>
+
+                <button
+                  onClick={() => setShowDetails(item)}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 py-2.5 text-sm font-medium text-[#0C4372] hover:bg-gray-50"
+                >
+                  <Eye size={16} />
+                  View Details
+                </button>
+              </div>
+            ))}
           </div>
         </>
       )}
 
-      {/* Details Modal */}
+      {/* Subscription Details Modal */}
       {showDetails && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl">
@@ -550,17 +413,16 @@ export default function ActiveSubscriptionsPage() {
               </div>
 
               <button
-                onClick={() =>
-                  setShowDetails(null)
-                }
+                onClick={() => setShowDetails(null)}
                 className="rounded-full p-2 hover:bg-gray-100"
+                aria-label="Close details"
               >
                 <X size={20} />
               </button>
             </div>
 
             <div className="space-y-4 p-5">
-              {/* User */}
+              {/* User Information */}
               <div className="rounded-xl bg-gray-50 p-4">
                 <h3 className="mb-3 font-semibold text-gray-800">
                   User Information
@@ -569,30 +431,22 @@ export default function ActiveSubscriptionsPage() {
                 <div className="space-y-2 text-sm">
                   <InfoRow
                     label="Name"
-                    value={
-                      showDetails.user.fullName
-                    }
+                    value={showDetails.user.fullName}
                   />
 
                   <InfoRow
                     label="Email"
-                    value={
-                      showDetails.user.email
-                    }
+                    value={showDetails.user.email}
                   />
 
                   <InfoRow
                     label="Phone"
-                    value={
-                      showDetails.user
-                        .phoneNumber ||
-                      "Not provided"
-                    }
+                    value={showDetails.user.phoneNumber || "Not provided"}
                   />
                 </div>
               </div>
 
-              {/* Subscription */}
+              {/* Subscription Information */}
               <div className="rounded-xl bg-gray-50 p-4">
                 <h3 className="mb-3 font-semibold text-gray-800">
                   Subscription Information
@@ -601,16 +455,12 @@ export default function ActiveSubscriptionsPage() {
                 <div className="space-y-2 text-sm">
                   <InfoRow
                     label="Service"
-                    value={getServiceLabel(
-                      showDetails.serviceType
-                    )}
+                    value={getServiceLabel(showDetails.serviceType)}
                   />
 
                   <InfoRow
                     label="Plan"
-                    value={
-                      showDetails.planName
-                    }
+                    value={showDetails.planName}
                   />
 
                   <InfoRow
@@ -623,46 +473,32 @@ export default function ActiveSubscriptionsPage() {
                     value={`₹${showDetails.price}`}
                   />
 
-                  <InfoRow
-                    label="Status"
-                    value="Active"
-                  />
+                  <InfoRow label="Status" value="Active" />
 
                   <InfoRow
                     label="Start Date"
-                    value={formatDate(
-                      showDetails.startDate
-                    )}
+                    value={formatDate(showDetails.startDate)}
                   />
 
                   <InfoRow
                     label="End Date"
-                    value={formatDate(
-                      showDetails.endDate
-                    )}
+                    value={formatDate(showDetails.endDate)}
                   />
 
                   <InfoRow
                     label="Days Remaining"
-                    value={`${getDaysRemaining(
-                      showDetails.endDate
-                    )} days`}
+                    value={getRemainingLabel(showDetails)}
                   />
 
                   <InfoRow
                     label="Payment ID"
-                    value={
-                      showDetails.paymentId ||
-                      "Not available"
-                    }
+                    value={showDetails.paymentId || "Not available"}
                   />
                 </div>
               </div>
 
               <button
-                onClick={() =>
-                  setShowDetails(null)
-                }
+                onClick={() => setShowDetails(null)}
                 className="w-full rounded-lg bg-[#0C4372] py-3 text-sm font-medium text-white hover:opacity-90"
               >
                 Close
@@ -675,8 +511,7 @@ export default function ActiveSubscriptionsPage() {
   );
 }
 
-/* ---------------- Components ---------------- */
-
+/* Statistics Card */
 function StatCard({
   title,
   value,
@@ -693,10 +528,7 @@ function StatCard({
       </div>
 
       <div>
-        <p className="text-sm text-gray-500">
-          {title}
-        </p>
-
+        <p className="text-sm text-gray-500">{title}</p>
         <p className="mt-1 text-2xl font-bold text-gray-800">
           {value}
         </p>
@@ -705,6 +537,7 @@ function StatCard({
   );
 }
 
+/* Service Badge */
 function ServiceBadge({
   serviceType,
 }: {
@@ -713,20 +546,17 @@ function ServiceBadge({
   const config = {
     DIET: {
       label: "Diet Plan",
-      className:
-        "bg-amber-50 text-amber-700 border-amber-200",
+      className: "bg-amber-50 text-amber-700 border-amber-200",
       icon: <Utensils size={14} />,
     },
     WORKOUT: {
       label: "Workout",
-      className:
-        "bg-blue-50 text-blue-700 border-blue-200",
+      className: "bg-blue-50 text-blue-700 border-blue-200",
       icon: <Dumbbell size={14} />,
     },
     CONSULTATION: {
       label: "Consultation",
-      className:
-        "bg-purple-50 text-purple-700 border-purple-200",
+      className: "bg-purple-50 text-purple-700 border-purple-200",
       icon: <Video size={14} />,
     },
   };
@@ -743,6 +573,7 @@ function ServiceBadge({
   );
 }
 
+/* Information Card */
 function InfoItem({
   label,
   value,
@@ -752,10 +583,7 @@ function InfoItem({
 }) {
   return (
     <div className="rounded-lg bg-gray-50 p-3">
-      <p className="text-xs text-gray-500">
-        {label}
-      </p>
-
+      <p className="text-xs text-gray-500">{label}</p>
       <p className="mt-1 truncate text-sm font-medium text-gray-800">
         {value}
       </p>
@@ -763,6 +591,7 @@ function InfoItem({
   );
 }
 
+/* Information Row */
 function InfoRow({
   label,
   value,
@@ -772,10 +601,7 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-gray-200 pb-2 last:border-0 last:pb-0">
-      <span className="text-gray-500">
-        {label}
-      </span>
-
+      <span className="text-gray-500">{label}</span>
       <span className="text-right font-medium text-gray-800">
         {value}
       </span>
@@ -783,9 +609,8 @@ function InfoRow({
   );
 }
 
-function getServiceLabel(
-  serviceType: ServiceType
-) {
+/* Service Label */
+function getServiceLabel(serviceType: ServiceType) {
   if (serviceType === "DIET") {
     return "Diet Plan";
   }

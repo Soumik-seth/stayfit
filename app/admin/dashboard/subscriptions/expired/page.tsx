@@ -7,8 +7,8 @@ import {
   Search,
   RefreshCw,
   X,
-  CreditCard,
   CalendarDays,
+  CreditCard,
   Utensils,
   Dumbbell,
   Video,
@@ -431,7 +431,7 @@ export default function ExpiredSubscriptionsPage() {
                             {getExpiredDays(
                               item.endDate
                             )}{" "}
-                            days ago
+                            days
                           </span>
                         </td>
 
@@ -514,7 +514,7 @@ export default function ExpiredSubscriptionsPage() {
                       label="Expired"
                       value={`${getExpiredDays(
                         item.endDate
-                      )} days ago`}
+                      )} days`}
                     />
                   </div>
 
@@ -643,10 +643,10 @@ export default function ExpiredSubscriptionsPage() {
                   />
 
                   <InfoRow
-                    label="Expired"
+                    label="Expired For"
                     value={`${getExpiredDays(
                       showDetails.endDate
-                    )} days ago`}
+                    )} days`}
                   />
 
                   <InfoRow
